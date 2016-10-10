@@ -24,10 +24,11 @@ func CreateMyMod() *rm.Module {
     mod.Commands = []rm.Command{
         {
             Name:   "hsetget",
-            Action: func(ctx rm.Ctx, args rm.CmdArgs) int {
+            Flags:  "write fast deny-oom",
+            FirstKey:1, LastKey:1, KeyStep:1,
+            Action: func(ctx rm.CmdContext) int {
                 fmt.Println("Call hgetset")
-                //ctx.ReplyWithString("World")
-                ctx.ReplyWithNull()
+                ctx.Ctx.ReplyWithNull()
                 return rm.OK
             },
         },

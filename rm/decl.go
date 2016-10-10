@@ -11,8 +11,7 @@ func RedisModule_OnLoad(ctx uintptr) C.int {
 //export cmd_func_call
 func cmd_func_call(id C.int, ctx uintptr, argv uintptr, argc int) C.int {
     fmt.Println("Recv command function callback")
-    Ctx(ctx).ReplyWithNull()
-    return OK
+    return C.int(getCommand(int(id)).Action(CmdContext{Ctx:Ctx(ctx)}))
 }
 //export mt_rdb_load_call
 func mt_rdb_load_call(id int, rdb uintptr, encver int) uintptr {

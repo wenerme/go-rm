@@ -237,7 +237,7 @@ func (ctx Ctx)AutoMemory() () {
 // RedisModuleString *RM_CreateString(RedisModuleCtx *ctx, const char *ptr, size_t len);
 func (ctx Ctx)CreateString(ptr string, len int) (String) {
     c := C.CString(ptr)
-    defer C.free(c);
+    defer C.free(unsafe.Pointer(c));
     return CreateString(unsafe.Pointer(C.CreateString(ctx.ptr(), c, C.size_t(len))))
 }
 
@@ -289,7 +289,7 @@ func (ctx Ctx)ReplyWithLongLong(ll int64) (int) {
 // int RM_ReplyWithError(RedisModuleCtx *ctx, const char *err);
 func (ctx Ctx)ReplyWithError(err string) (int) {
     c := C.CString(err)
-    defer C.free(c);
+    defer C.free(unsafe.Pointer(c));
     return int(C.ReplyWithError(ctx.ptr(), c))
 }
 
@@ -301,7 +301,7 @@ func (ctx Ctx)ReplyWithError(err string) (int) {
 // int RM_ReplyWithSimpleString(RedisModuleCtx *ctx, const char *msg);
 func (ctx Ctx)ReplyWithSimpleString(msg string) (int) {
     c := C.CString(msg)
-    defer C.free(c);
+    defer C.free(unsafe.Pointer(c));
     return int(C.ReplyWithSimpleString(ctx.ptr(), c))
 }
 
@@ -421,10 +421,10 @@ func (ctx Ctx)ReplyWithDouble(d float64) (int) {
 // int RM_Replicate(RedisModuleCtx *ctx, const char *cmdname, const char *fmt, ...);
 func (ctx Ctx)Replicate(cmdname string, format string, args ...interface{}) (int) {
     c := C.CString(cmdname)
-    defer C.free(c);
+    defer C.free(unsafe.Pointer(c));
     msg := fmt.Sprintf(format, args...)
     s := C.CString(msg)
-    defer C.free(s);
+    defer C.free(unsafe.Pointer(s));
     return int(C.Replicate(ctx.ptr(), c, s))
 }
 
@@ -510,10 +510,10 @@ func (ctx Ctx)OpenKey(keyname String, mode int) (unsafe.Pointer) {
 // RedisModuleCallReply *RM_Call(RedisModuleCtx *ctx, const char *cmdname, const char *fmt, ...);
 func (ctx Ctx)Call(cmdname string, format string, args ... interface{}) (CallReply) {
     c := C.CString(cmdname)
-    defer C.free(c);
+    defer C.free(unsafe.Pointer(c));
     msg := fmt.Sprintf(format, args...)
     s := C.CString(msg)
-    defer C.free(s);
+    defer C.free(unsafe.Pointer(s));
     return CreateCallReply(unsafe.Pointer(C.Call(ctx.ptr(), c, s)))
 }
 
@@ -532,41 +532,71 @@ func (ctx Ctx)Call(cmdname string, format string, args ... interface{}) (CallRep
 // to emit, this limti is not specified but is guaranteed to be more than
 // a few lines of text.
 // void RM_Log(RedisModuleCtx *ctx, const char *levelstr, const char *fmt, ...);
-func (ctx Ctx)Log(l LogLevel, msg string) () {
-    c := C.CString(msg)
-    defer C.free(c);
+func (ctx Ctx)Log(l LogLevel, format string, args ... interface{}) () {
+    c := C.CString(fmt.Sprintf(format, args))
+    defer C.free(unsafe.Pointer(c));
     C.CtxLog(ctx.ptr(), C.int(l), c)
+}
+func (ctx Ctx)LogDebug(format string, args ... interface{}) () {
+    ctx.Log(LOG_DEBUG, format, args...)
+}
+func (ctx Ctx)LogVerbose(format string, args ... interface{}) () {
+    ctx.Log(LOG_VERBOSE, format, args...)
+}
+func (ctx Ctx)LogNotice(format string, args ... interface{}) () {
+    ctx.Log(LOG_NOTICE, format, args...)
+}
+func (ctx Ctx)LogWarn(format string, args ... interface{}) () {
+    ctx.Log(LOG_WARNING, format, args...)
 }
 
 func (ctx Ctx)Init(name string, version int, apiVersion int) int {
     c := C.CString(name)
-    defer C.free(c);
+    defer C.free(unsafe.Pointer(c));
     return (int)(C.RedisModule_Init(ctx.ptr(), c, (C.int)(version), (C.int)(apiVersion)))
 }
 func (c Ctx)Load(mod *Module) int {
     if mod == nil {
-        LogErr("Load Mod must not nil")
+        c.LogWarn("Load Mod must not nil")
         return ERR
     }
     if c.Init(mod.Name, mod.Version, APIVER_1) == ERR {
-        LogErr("Init mod %s failed", mod.Name)
+        c.LogWarn("Init mod %s failed", mod.Name)
         return ERR
     }
+    if mod.BeforeInit != nil {
+        err := mod.BeforeInit(c)
+        if err != nil {
+            c.LogWarn("BeforeInit failed: %v", err)
+            return ERR
+        }
+    }
+
     for _, cmd := range mod.Commands {
-        //if c.CreateCommand(cmd.Name, cmd.Action, "write fast deny-oom", 1, 1, 1) == ERR {
-        //    LogErr("Create mod %s command %s failed", mod.Name, cmd.Name)
-        //    return ERR
-        //}
-        LogDebug("Create mod %s command %s", mod.Name, cmd.Name)
+        if c.CreateCommand(&cmd) == ERR {
+            return ERR
+        }
+        c.LogVerbose("Create mod %s command %s", mod.Name, cmd.Name)
+    }
+
+    if mod.AfterInit != nil {
+        err := mod.AfterInit(c)
+        if err != nil {
+            c.LogWarn("BeforeInit failed: %v", err)
+            return ERR
+        }
     }
     return OK
 }
 //
-//func (c Ctx)CreateCommand(name string, cmdFunc CmdFunc, strFlags string, firstKey int, lastKey int, keyStep int) int {
-//    id := len(callbacks)
-//    callbacks = append(callbacks, cmdFunc)
-//    return (int)(C.CreateCommandCallID(c.ptr(), C.CString(name), C.int(id), C.CString(strFlags), C.int(firstKey), C.int(lastKey), C.int(keyStep)))
-//}
+func (c Ctx)CreateCommand(cmd *Command) int {
+    id := commandId(cmd)
+    name := C.CString(cmd.Name)
+    defer C.free(unsafe.Pointer(name))
+    flags := C.CString(cmd.Flags)
+    defer C.free(unsafe.Pointer(flags))
+    return (int)(C.CreateCommandCallID(c.ptr(), name, C.int(id), flags, C.int(cmd.FirstKey), C.int(cmd.LastKey), C.int(cmd.KeyStep)))
+}
 
 
 // =============================================================================

@@ -1,14 +1,21 @@
 package rm
 
 type Module struct {
-    Name     string
-    Version  int
-    Commands []Command
+    Name       string
+    Version    int
+    Commands   []Command
+    //
+    BeforeInit func(Ctx) error
+    AfterInit  func(Ctx) error
 }
 
 type Command struct {
-    Name   string
-    Action CmdFunc
+    Name     string
+    Action   CmdFunc
+    Flags    string
+    FirstKey int
+    LastKey  int
+    KeyStep  int
 }
 
 func NewMod() *Module {

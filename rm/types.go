@@ -16,7 +16,7 @@ type Ctx uintptr
 type CallReply uintptr
 type String uintptr
 
-type CmdFunc func(ctx Ctx, args CmdArgs) int
+type CmdFunc func(args CmdContext) int
 
 type Key unsafe.Pointer
 type ZsetKey Key
@@ -54,11 +54,6 @@ const (
     LOG_WARNING
 )
 
-type KeyType int
-
-const (
-    KeyType_Module KeyType = 0//TODO
-)
 
 type CmdArgs struct {
     argv unsafe.Pointer
