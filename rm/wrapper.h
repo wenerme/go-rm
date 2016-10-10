@@ -29,17 +29,17 @@ char* Strdup(const char* str){return RedisModule_Strdup(str);}
 // if at least word size bytes are requested, otherwise it is just
 // aligned to the next power of two, so for example a 3 bytes request is
 // 4 bytes aligned while a 2 bytes request is 2 bytes aligned.
-// 
+//
 // There is no realloc style function since when this is needed to use the
 // pool allocator is not a good idea.
-// 
+//
 // The function returns NULL if `bytes` is 0.
 void* PoolAlloc(RedisModuleCtx* ctx,size_t bytes){return RedisModule_PoolAlloc(ctx,bytes);}
 
 // Lookup the requested module API and store the function pointer into the
 // target pointer. The function returns `REDISMODULE_ERR` if there is no such
 // named API, otherwise `REDISMODULE_OK`.
-// 
+//
 // This function is not meant to be used by modules developer, it is only
 // used implicitly by including redismodule.h.
 int GetApi(const char* funcname,void** targetPtrPtr){return RedisModule_GetApi(funcname,targetPtrPtr);}
@@ -54,23 +54,23 @@ int IsKeysPositionRequest(RedisModuleCtx* ctx){return RedisModule_IsKeysPosition
 // the command implementation checks for this special call using the
 // `RedisModule_IsKeysPositionRequest()` API and uses this function in
 // order to report keys, like in the following example:
-// 
+//
 //  if (`RedisModule_IsKeysPositionRequest(ctx))` {
 //      `RedisModule_KeyAtPos(ctx`,1);
 //      `RedisModule_KeyAtPos(ctx`,2);
 //  }
-// 
+//
 //  Note: in the example below the get keys API would not be needed since
 //  keys are at fixed positions. This interface is only used for commands
 //  with a more complex structure.
 void KeyAtPos(RedisModuleCtx* ctx,int pos){RedisModule_KeyAtPos(ctx,pos);}
 
 // And is supposed to always return `REDISMODULE_OK`.
-// 
+//
 // The set of flags 'strflags' specify the behavior of the command, and should
 // be passed as a C string compoesd of space separated words, like for
 // example "write deny-oom". The set of flags are:
-// 
+//
 // * **"write"**:     The command may modify the data set (it may also read
 //                    from it).
 // * **"readonly"**:  The command returns data from keys but never writes.
@@ -106,41 +106,41 @@ void KeyAtPos(RedisModuleCtx* ctx,int pos){RedisModule_KeyAtPos(ctx,pos);}
 int CreateCommand(RedisModuleCtx* ctx,const char* name,RedisModuleCmdFunc cmdfunc,const char* strflags,int firstkey,int lastkey,int keystep){return RedisModule_CreateCommand(ctx,name,cmdfunc,strflags,firstkey,lastkey,keystep);}
 
 // Called by `RM_Init()` to setup the `ctx->module` structure.
-// 
+//
 // This is an internal function, Redis modules developers don't need
 // to use it.
 void SetModuleAttribs(RedisModuleCtx* ctx,const char* name,int ver,int apiver){RedisModule_SetModuleAttribs(ctx,name,ver,apiver);}
 
 // Enable automatic memory management. See API.md for more information.
-// 
+//
 // The function must be called as the first function of a command implementation
 // that wants to use automatic memory.
 void AutoMemory(RedisModuleCtx* ctx){RedisModule_AutoMemory(ctx);}
 
 // Create a new module string object. The returned string must be freed
 // with `RedisModule_FreeString()`, unless automatic memory is enabled.
-// 
+//
 // The string is created by copying the `len` bytes starting
 // at `ptr`. No reference is retained to the passed buffer.
 RedisModuleString* CreateString(RedisModuleCtx* ctx,const char* ptr,size_t len){return RedisModule_CreateString(ctx,ptr,len);}
 
 // Like `RedisModule_CreatString()`, but creates a string starting from a long long
 // integer instead of taking a buffer and its length.
-// 
+//
 // The returned string must be released with `RedisModule_FreeString()` or by
 // enabling automatic memory management.
 RedisModuleString* CreateStringFromLongLong(RedisModuleCtx* ctx,long long ll){return RedisModule_CreateStringFromLongLong(ctx,ll);}
 
 // Like `RedisModule_CreatString()`, but creates a string starting from an existing
 // RedisModuleString.
-// 
+//
 // The returned string must be released with `RedisModule_FreeString()` or by
 // enabling automatic memory management.
 RedisModuleString* CreateStringFromString(RedisModuleCtx* ctx,const RedisModuleString* str){return RedisModule_CreateStringFromString(ctx,str);}
 
 // Free a module string object obtained with one of the Redis modules API calls
 // that return new string objects.
-// 
+//
 // It is possible to call this function even when automatic memory management
 // is enabled. In that case the string will be released ASAP and removed
 // from the pool of string to release at the end.
@@ -162,7 +162,7 @@ int StringToLongLong(RedisModuleString* str,long long* ll){return RedisModule_St
 // not a valid string representation of a double value.
 int StringToDouble(RedisModuleString* str,double* d){return RedisModule_StringToDouble(str,d);}
 
-// 
+//
 int WrongArity(RedisModuleCtx* ctx){return RedisModule_WrongArity(ctx);}
 
 // Send an integer reply to the client, with the specified long long value.
@@ -175,20 +175,20 @@ int ReplyWithError(RedisModuleCtx* ctx,const char* err){return RedisModule_Reply
 // Reply with a simple string (+... \r\n in RESP protocol). This replies
 // are suitable only when sending a small non-binary string with small
 // overhead, like "OK" or similar replies.
-// 
+//
 // The function always returns `REDISMODULE_OK`.
 int ReplyWithSimpleString(RedisModuleCtx* ctx,const char* msg){return RedisModule_ReplyWithSimpleString(ctx,msg);}
 
 // Reply with an array type of 'len' elements. However 'len' other calls
 // to `ReplyWith*` style functions must follow in order to emit the elements
 // of the array.
-// 
+//
 // When producing arrays with a number of element that is not known beforehand
 // the function can be called with the special count
 // `REDISMODULE_POSTPONED_ARRAY_LEN`, and the actual number of elements can be
 // later set with `RedisModule_ReplySetArrayLength()` (which will set the
 // latest "open" count if there are multiple ones).
-// 
+//
 // The function always returns `REDISMODULE_OK`.
 int ReplyWithArray(RedisModuleCtx* ctx,long len){return RedisModule_ReplyWithArray(ctx,len);}
 
@@ -196,14 +196,14 @@ int ReplyWithArray(RedisModuleCtx* ctx,long len){return RedisModule_ReplyWithArr
 // `REDISMODULE_POSTPONED_ARRAY_LEN`, because we don't know beforehand the number
 // of items we are going to output as elements of the array, this function
 // will take care to set the array length.
-// 
+//
 // Since it is possible to have multiple array replies pending with unknown
 // length, this function guarantees to always set the latest array length
 // that was created in a postponed way.
-// 
+//
 // For example in order to output an array like [1,[10,20,30]] we
 // could write:
-// 
+//
 //  `RedisModule_ReplyWithArray(ctx`,`REDISMODULE_POSTPONED_ARRAY_LEN`);
 //  `RedisModule_ReplyWithLongLong(ctx`,1);
 //  `RedisModule_ReplyWithArray(ctx`,`REDISMODULE_POSTPONED_ARRAY_LEN`);
@@ -212,7 +212,7 @@ int ReplyWithArray(RedisModuleCtx* ctx,long len){return RedisModule_ReplyWithArr
 //  `RedisModule_ReplyWithLongLong(ctx`,30);
 //  `RedisModule_ReplySetArrayLength(ctx`,3); // Set len of 10,20,30 array.
 //  `RedisModule_ReplySetArrayLength(ctx`,2); // Set len of top array
-// 
+//
 // Note that in the above example there is no reason to postpone the array
 // length, since we produce a fixed number of elements, but in the practice
 // the code may use an interator or other ways of creating the output so
@@ -220,18 +220,18 @@ int ReplyWithArray(RedisModuleCtx* ctx,long len){return RedisModule_ReplyWithArr
 void ReplySetArrayLength(RedisModuleCtx* ctx,long len){RedisModule_ReplySetArrayLength(ctx,len);}
 
 // Reply with a bulk string, taking in input a C buffer pointer and length.
-// 
+//
 // The function always returns `REDISMODULE_OK`.
 int ReplyWithStringBuffer(RedisModuleCtx* ctx,const char* buf,size_t len){return RedisModule_ReplyWithStringBuffer(ctx,buf,len);}
 
 // Reply with a bulk string, taking in input a RedisModuleString object.
-// 
+//
 // The function always returns `REDISMODULE_OK`.
 int ReplyWithString(RedisModuleCtx* ctx,RedisModuleString* str){return RedisModule_ReplyWithString(ctx,str);}
 
 // Reply to the client with a NULL. In the RESP protocol a NULL is encoded
 // as the string "$-1\r\n".
-// 
+//
 // The function always returns `REDISMODULE_OK`.
 int ReplyWithNull(RedisModuleCtx* ctx){return RedisModule_ReplyWithNull(ctx);}
 
@@ -239,7 +239,7 @@ int ReplyWithNull(RedisModuleCtx* ctx){return RedisModule_ReplyWithNull(ctx);}
 // This function is useful when we use `RedisModule_Call()` in order to
 // execute some command, as we want to reply to the client exactly the
 // same reply we obtained by the command.
-// 
+//
 // The function always returns `REDISMODULE_OK`.
 int ReplyWithCallReply(RedisModuleCtx* ctx,RedisModuleCallReply* reply){return RedisModule_ReplyWithCallReply(ctx,reply);}
 
@@ -247,27 +247,27 @@ int ReplyWithCallReply(RedisModuleCtx* ctx,RedisModuleCallReply* reply){return R
 // This function is basically equivalent to converting a double into
 // a string into a C buffer, and then calling the function
 // `RedisModule_ReplyWithStringBuffer()` with the buffer and length.
-// 
+//
 // The function always returns `REDISMODULE_OK`.
 int ReplyWithDouble(RedisModuleCtx* ctx,double d){return RedisModule_ReplyWithDouble(ctx,d);}
 
 // Replicate the specified command and arguments to slaves and AOF, as effect
 // of execution of the calling command implementation.
-// 
+//
 // The replicated commands are always wrapped into the MULTI/EXEC that
 // contains all the commands replicated in a given module command
 // execution. However the commands replicated with `RedisModule_Call()`
 // are the first items, the ones replicated with `RedisModule_Replicate()`
 // will all follow before the EXEC.
-// 
+//
 // Modules should try to use one interface or the other.
-// 
+//
 // This command follows exactly the same interface of `RedisModule_Call()`,
 // so a set of format specifiers must be passed, followed by arguments
 // matching the provided format specifiers.
-// 
+//
 // Please refer to `RedisModule_Call()` for more information.
-// 
+//
 // The command returns `REDISMODULE_ERR` if the format specifiers are invalid
 // or the command name does not belong to a known command.
 int Replicate(RedisModuleCtx* ctx,const char* cmdname,const char* fmt){return RedisModule_Replicate(ctx,cmdname,fmt);}
@@ -276,24 +276,24 @@ int Replicate(RedisModuleCtx* ctx,const char* cmdname,const char* fmt){return Re
 // by the client. Note that this function will not wrap the command into
 // a MULTI/EXEC stanza, so it should not be mixed with other replication
 // commands.
-// 
+//
 // Basically this form of replication is useful when you want to propagate
 // the command to the slaves and AOF file exactly as it was called, since
 // the command can just be re-executed to deterministically re-create the
 // new state starting from the old one.
-// 
+//
 // The function always returns `REDISMODULE_OK`.
 int ReplicateVerbatim(RedisModuleCtx* ctx){return RedisModule_ReplicateVerbatim(ctx);}
 
 // Return the ID of the current client calling the currently active module
 // command. The returned ID has a few guarantees:
-// 
+//
 // 1. The ID is different for each different client, so if the same client
 //    executes a module command multiple times, it can be recognized as
 //    having the same ID, otherwise the ID will be different.
 // 2. The ID increases monotonically. Clients connecting to the server later
 //    are guaranteed to get IDs greater than any past ID previously seen.
-// 
+//
 // Valid IDs are from 1 to 2^64-1. If 0 is returned it means there is no way
 // to fetch the ID in the context the function was currently called.
 unsigned long long GetClientId(RedisModuleCtx* ctx){return RedisModule_GetClientId(ctx);}
@@ -303,11 +303,11 @@ int GetSelectedDb(RedisModuleCtx* ctx){return RedisModule_GetSelectedDb(ctx);}
 
 // Change the currently selected DB. Returns an error if the id
 // is out of range.
-// 
+//
 // Note that the client will retain the currently selected DB even after
 // the Redis command implemented by the module calling this function
 // returns.
-// 
+//
 // If the module command wishes to change something in a different DB and
 // returns back to the original one, it should call `RedisModule_GetSelectedDb()`
 // before in order to restore the old DB number before returning.
@@ -316,10 +316,10 @@ int SelectDb(RedisModuleCtx* ctx,int newid){return RedisModule_SelectDb(ctx,newi
 // Return an handle representing a Redis key, so that it is possible
 // to call other APIs with the key handle as argument to perform
 // operations on the key.
-// 
+//
 // The return value is the handle repesenting the key, that must be
 // closed with `RM_CloseKey()`.
-// 
+//
 // If the key does not exist and WRITE mode is requested, the handle
 // is still returned, since it is possible to perform operations on
 // a yet not existing key (that will be created, for example, after
@@ -339,7 +339,7 @@ int KeyType(RedisModuleKey* key){return RedisModule_KeyType(key);}
 // Return the length of the value associated with the key.
 // For strings this is the length of the string. For all the other types
 // is the number of elements (just counting keys for hashes).
-// 
+//
 // If the key pointer is NULL or the key is empty, zero is returned.
 size_t ValueLength(RedisModuleKey* key){return RedisModule_ValueLength(key);}
 
@@ -357,10 +357,10 @@ mstime_t GetExpire(RedisModuleKey* key){return RedisModule_GetExpire(key);}
 // Set a new expire for the key. If the special expire
 // `REDISMODULE_NO_EXPIRE` is set, the expire is cancelled if there was
 // one (the same as the PERSIST command).
-// 
+//
 // Note that the expire must be provided as a positive integer representing
 // the number of milliseconds of TTL the key should have.
-// 
+//
 // The function returns `REDISMODULE_OK` on success or `REDISMODULE_ERR` if
 // the key was not open for writing or is an empty key.
 int SetExpire(RedisModuleKey* key,mstime_t expire){return RedisModule_SetExpire(key,expire);}
@@ -374,27 +374,27 @@ int StringSet(RedisModuleKey* key,RedisModuleString* str){return RedisModule_Str
 // Prepare the key associated string value for DMA access, and returns
 // a pointer and size (by reference), that the user can use to read or
 // modify the string in-place accessing it directly via pointer.
-// 
+//
 // The 'mode' is composed by bitwise OR-ing the following flags:
-// 
+//
 // `REDISMODULE_READ` -- Read access
 // `REDISMODULE_WRITE` -- Write access
-// 
+//
 // If the DMA is not requested for writing, the pointer returned should
 // only be accessed in a read-only fashion.
-// 
+//
 // On error (wrong type) NULL is returned.
-// 
+//
 // DMA access rules:
-// 
+//
 // 1. No other key writing function should be called since the moment
 // the pointer is obtained, for all the time we want to use DMA access
 // to read or modify the string.
-// 
+//
 // 2. Each time `RM_StringTruncate()` is called, to continue with the DMA
 // access, `RM_StringDMA()` should be called again to re-obtain
 // a new pointer and length.
-// 
+//
 // 3. If the returned pointer is not NULL, but the length is zero, no
 // byte can be touched (the string is empty, or the key itself is empty)
 // so a `RM_StringTruncate()` call should be used if there is to enlarge
@@ -403,14 +403,14 @@ char* StringDMA(RedisModuleKey* key,size_t* len,int mode){return RedisModule_Str
 
 // If the string is open for writing and is of string type, resize it, padding
 // with zero bytes if the new length is greater than the old one.
-// 
+//
 // After this call, `RM_StringDMA()` must be called again to continue
 // DMA access with the new pointer.
-// 
+//
 // The function returns `REDISMODULE_OK` on success, and `REDISMODULE_ERR` on
 // error, that is, the key is not open for writing, is not a string
 // or resizing for more than 512 MB is requested.
-// 
+//
 // If the key is empty, a string key is created with the new string value
 // unless the new length value requested is zero.
 int StringTruncate(RedisModuleKey* key,size_t newlen){return RedisModule_StringTruncate(key,newlen);}
@@ -436,28 +436,28 @@ RedisModuleString* ListPop(RedisModuleKey* key,int where){return RedisModule_Lis
 
 // Add a new element into a sorted set, with the specified 'score'.
 // If the element already exists, the score is updated.
-// 
+//
 // A new sorted set is created at value if the key is an empty open key
 // setup for writing.
-// 
+//
 // Additional flags can be passed to the function via a pointer, the flags
 // are both used to receive input and to communicate state when the function
 // returns. 'flagsptr' can be NULL if no special flags are used.
-// 
+//
 // The input flags are:
-// 
+//
 // `REDISMODULE_ZADD_XX`: Element must already exist. Do nothing otherwise.
 // `REDISMODULE_ZADD_NX`: Element must not exist. Do nothing otherwise.
-// 
+//
 // The output flags are:
-// 
+//
 // `REDISMODULE_ZADD_ADDED`: The new element was added to the sorted set.
 // `REDISMODULE_ZADD_UPDATED`: The score of the element was updated.
 // `REDISMODULE_ZADD_NOP`: No operation was performed because XX or NX flags.
-// 
+//
 // On success the function returns `REDISMODULE_OK`. On the following errors
 // `REDISMODULE_ERR` is returned:
-// 
+//
 // * The key was not opened for writing.
 // * The key is of the wrong type.
 // * 'score' double value is not a number (NaN).
@@ -467,12 +467,12 @@ int ZsetAdd(RedisModuleKey* key,double score,RedisModuleString* ele,int* flagspt
 // a new score, the score of the existing element is incremented, or if the
 // element does not already exist, it is added assuming the old score was
 // zero.
-// 
+//
 // The input and output flags, and the return value, have the same exact
 // meaning, with the only difference that this function will return
 // `REDISMODULE_ERR` even when 'score' is a valid double number, but adding it
 // to the existing score resuts into a NaN (not a number) condition.
-// 
+//
 // This function has an additional field 'newscore', if not NULL is filled
 // with the new score of the element after the increment, if no error
 // is returned.
@@ -481,27 +481,27 @@ int ZsetIncrby(RedisModuleKey* key,double score,RedisModuleString* ele,int* flag
 // Remove the specified element from the sorted set.
 // The function returns `REDISMODULE_OK` on success, and `REDISMODULE_ERR`
 // on one of the following conditions:
-// 
+//
 // * The key was not opened for writing.
 // * The key is of the wrong type.
-// 
+//
 // The return value does NOT indicate the fact the element was really
 // removed (since it existed) or not, just if the function was executed
 // with success.
-// 
+//
 // In order to know if the element was removed, the additional argument
 // 'deleted' must be passed, that populates the integer by reference
 // setting it to 1 or 0 depending on the outcome of the operation.
 // The 'deleted' argument can be NULL if the caller is not interested
 // to know if the element was really removed.
-// 
+//
 // Empty keys will be handled correctly by doing nothing.
 int ZsetRem(RedisModuleKey* key,RedisModuleString* ele,int* deleted){return RedisModule_ZsetRem(key,ele,deleted);}
 
 // On success retrieve the double score associated at the sorted set element
 // 'ele' and returns `REDISMODULE_OK`. Otherwise `REDISMODULE_ERR` is returned
 // to signal one of the following conditions:
-// 
+//
 // * There is no such element 'ele' in the sorted set.
 // * The key is not a sorted set.
 // * The key is an open empty key.
@@ -516,15 +516,15 @@ int ZsetRangeEndReached(RedisModuleKey* key){return RedisModule_ZsetRangeEndReac
 // Setup a sorted set iterator seeking the first element in the specified
 // range. Returns `REDISMODULE_OK` if the iterator was correctly initialized
 // otherwise `REDISMODULE_ERR` is returned in the following conditions:
-// 
+//
 // 1. The value stored at key is not a sorted set or the key is empty.
-// 
+//
 // The range is specified according to the two double values 'min' and 'max'.
 // Both can be infinite using the following two macros:
-// 
+//
 // `REDISMODULE_POSITIVE_INFINITE` for positive infinite value
 // `REDISMODULE_NEGATIVE_INFINITE` for negative infinite value
-// 
+//
 // 'minex' and 'maxex' parameters, if true, respectively setup a range
 // where the min and max value are exclusive (not included) instead of
 // inclusive.
@@ -538,10 +538,10 @@ int ZsetLastInScoreRange(RedisModuleKey* key,double min,double max,int minex,int
 // lexicographical range. Returns `REDISMODULE_OK` if the iterator was correctly
 // initialized otherwise `REDISMODULE_ERR` is returned in the
 // following conditions:
-// 
+//
 // 1. The value stored at key is not a sorted set or the key is empty.
 // 2. The lexicographical range 'min' and 'max' format is invalid.
-// 
+//
 // 'min' and 'max' should be provided as two RedisModuleString objects
 // in the same format as the parameters passed to the ZRANGEBYLEX command.
 // The function does not take ownership of the objects, so they can be released
@@ -568,12 +568,12 @@ int ZsetRangeNext(RedisModuleKey* key){return RedisModule_ZsetRangeNext(key);}
 int ZsetRangePrev(RedisModuleKey* key){return RedisModule_ZsetRangePrev(key);}
 
 // Return value:
-// 
+//
 // The number of fields updated (that may be less than the number of fields
 // specified because of the XX or NX options).
-// 
+//
 // In the following case the return value is always zero:
-// 
+//
 // * The key was not open for writing.
 // * The key was associated with a non Hash value.
 int HashSet(RedisModuleKey* key,int flags){return RedisModule_HashSet(key,flags);}
@@ -584,38 +584,38 @@ int HashSet(RedisModuleKey* key,int flags){return RedisModule_HashSet(key,flags)
 // value of the field if the field exist, or NULL if the field did not exist.
 // At the end of the field/value-ptr pairs, NULL must be specified as last
 // argument to signal the end of the arguments in the variadic function.
-// 
+//
 // This is an example usage:
-// 
+//
 //      RedisModuleString *first, *second;
 //      `RedisModule_HashGet(mykey`,`REDISMODULE_HASH_NONE`,argv[1],&first,
 //                      argv[2],&second,NULL);
-// 
+//
 // As with `RedisModule_HashSet()` the behavior of the command can be specified
 // passing flags different than `REDISMODULE_HASH_NONE`:
-// 
+//
 // `REDISMODULE_HASH_CFIELD`: field names as null terminated C strings.
-// 
+//
 // `REDISMODULE_HASH_EXISTS`: instead of setting the value of the field
 // expecting a RedisModuleString pointer to pointer, the function just
 // reports if the field esists or not and expects an integer pointer
 // as the second element of each pair.
-// 
+//
 // Example of `REDISMODULE_HASH_CFIELD`:
-// 
+//
 //      RedisModuleString *username, *hashedpass;
 //      `RedisModule_HashGet(mykey`,"username",&username,"hp",&hashedpass, NULL);
-// 
+//
 // Example of `REDISMODULE_HASH_EXISTS`:
-// 
+//
 //      int exists;
 //      `RedisModule_HashGet(mykey`,argv[1],&exists,NULL);
-// 
+//
 // The function returns `REDISMODULE_OK` on success and `REDISMODULE_ERR` if
 // the key is not an hash value.
-// 
+//
 // Memory management:
-// 
+//
 // The returned RedisModuleString objects should be released with
 // `RedisModule_FreeString()`, or by enabling automatic memory management.
 int HashGet(RedisModuleKey* key,int flags){return RedisModule_HashGet(key,flags);}
@@ -650,7 +650,7 @@ RedisModuleString* CreateStringFromCallReply(RedisModuleCallReply* reply){return
 // Exported API to call any Redis command from modules.
 // On success a RedisModuleCallReply object is returned, otherwise
 // NULL is returned and errno is set to the following values:
-// 
+//
 // EINVAL: command non existing, wrong arity, wrong format specifier.
 // EPERM:  operation in Cluster instance with key in non local slot.
 RedisModuleCallReply* Call(RedisModuleCtx* ctx,const char* cmdname,const char* fmt){return RedisModule_Call(ctx,cmdname,fmt);}
@@ -673,7 +673,7 @@ int ModuleTypeSetValue(RedisModuleKey* key,RedisModuleType* mt,void* value){retu
 
 // Assuming `RedisModule_KeyType()` returned `REDISMODULE_KEYTYPE_MODULE` on
 // the key, returns the moduel type pointer of the value stored at key.
-// 
+//
 // If the key is NULL, is not associated with a module type, or is empty,
 // then NULL is returned instead.
 RedisModuleType* ModuleTypeGetType(RedisModuleKey* key){return RedisModule_ModuleTypeGetType(key);}
@@ -681,7 +681,7 @@ RedisModuleType* ModuleTypeGetType(RedisModuleKey* key){return RedisModule_Modul
 // Assuming `RedisModule_KeyType()` returned `REDISMODULE_KEYTYPE_MODULE` on
 // the key, returns the module type low-level value stored at key, as
 // it was set by the user via `RedisModule_ModuleTypeSet()`.
-// 
+//
 // If the key is NULL, is not associated with a module type, or is empty,
 // then NULL is returned instead.
 void* ModuleTypeGetValue(RedisModuleKey* key){return RedisModule_ModuleTypeGetValue(key);}
@@ -704,7 +704,7 @@ int64_t LoadSigned(RedisModuleIO* io){return RedisModule_LoadSigned(io);}
 
 // In the context of the rdb_save method of a module type, saves a
 // string into the RDB file taking as input a RedisModuleString.
-// 
+//
 // The string can be later loaded with `RedisModule_LoadString()` or
 // other Load family functions expecting a serialized string inside
 // the RDB file.
@@ -717,10 +717,10 @@ void SaveStringBuffer(RedisModuleIO* io,const char* str,size_t len){RedisModule_
 // In the context of the rdb_load method of a module data type, loads a string
 // from the RDB file, that was previously saved with `RedisModule_SaveString()`
 // functions family.
-// 
+//
 // The returned string is a newly allocated RedisModuleString object, and
 // the user should at some point free it with a call to `RedisModule_FreeString()`.
-// 
+//
 // If the data structure does not store strings as RedisModuleString objects,
 // the similar function `RedisModule_LoadStringBuffer()` could be used instead.
 RedisModuleString* LoadString(RedisModuleIO* io){return RedisModule_LoadString(io);}
@@ -728,7 +728,7 @@ RedisModuleString* LoadString(RedisModuleIO* io){return RedisModule_LoadString(i
 // Like `RedisModule_LoadString()` but returns an heap allocated string that
 // was allocated with `RedisModule_Alloc()`, and can be resized or freed with
 // `RedisModule_Realloc()` or `RedisModule_Free()`.
-// 
+//
 // The size of the string is stored at '*lenptr' if not NULL.
 // The returned string is not automatically NULL termianted, it is loaded
 // exactly as it was stored inisde the RDB file.
@@ -753,12 +753,12 @@ void EmitAOF(RedisModuleIO* io,const char* cmdname,const char* fmt){RedisModule_
 // Produces a log message to the standard Redis log, the format accepts
 // printf-alike specifiers, while level is a string describing the log
 // level to use when emitting the log, and must be one of the following:
-// 
+//
 // * "debug"
 // * "verbose"
 // * "notice"
 // * "warning"
-// 
+//
 // If the specified log level is invalid, verbose is used by default.
 // There is a fixed limit to the length of the log line this function is able
 // to emit, this limti is not specified but is guaranteed to be more than
