@@ -15,10 +15,12 @@ import (
 type Ctx uintptr
 type CallReply uintptr
 type String uintptr
+type IO uintptr
+type Key uintptr
+
 
 type CmdFunc func(args CmdContext) int
 
-type Key unsafe.Pointer
 type ZsetKey Key
 type HashKey Key
 type ListKey Key
@@ -34,7 +36,6 @@ func CreateCallReply(ptr unsafe.Pointer) CallReply {
 // ModuleType pattern [-_0-9A-Za-z]{9} suggest <typename>-<Vendor> not A{9}
 //type CmdFunc func(ctx Ctx, args CmdArgs) int
 
-type IO unsafe.Pointer
 
 type ModuleType struct {
     Name       string
@@ -82,5 +83,11 @@ func (v Ctx)ptr() unsafe.Pointer {
     return unsafe.Pointer(v)
 }
 func (v CallReply)ptr() unsafe.Pointer {
+    return unsafe.Pointer(v)
+}
+func (v IO)ptr() unsafe.Pointer {
+    return unsafe.Pointer(v)
+}
+func (v Key)ptr() unsafe.Pointer {
     return unsafe.Pointer(v)
 }
