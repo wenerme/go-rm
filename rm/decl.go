@@ -12,8 +12,8 @@ import (
 )
 
 //export RedisModule_OnLoad
-func RedisModule_OnLoad(ctx uintptr) C.int {
-    return C.int(Ctx(ctx).Load(Mod))
+func RedisModule_OnLoad(ctx uintptr, argv uintptr, argc int) C.int {
+    return C.int(Ctx(ctx).Load(Mod, toStringSlice(argv, argc)))
 }
 //export redis_module_on_unload
 func redis_module_on_unload() {
@@ -24,12 +24,7 @@ func redis_module_on_unload() {
 
 //export cmd_func_call
 func cmd_func_call(id C.int, ctx uintptr, argv uintptr, argc int) C.int {
-    args := make([]String, argc)
-    size := int(unsafe.Sizeof(C.uintptr_t(0)))
-    for i := 0; i < argc; i ++ {
-        ptr := unsafe.Pointer(argv + uintptr(size * i))
-        args[i] = String(uintptr(*(*C.uintptr_t)(ptr)))
-    }
+    args := toStringSlice(argv, argc)
     c := Ctx(ctx)
     cmd := getCommand(int(id))
     buf := bytes.NewBufferString(fmt.Sprintf("CmdFuncCall(%v): %v", id, cmd.Name))
@@ -39,6 +34,16 @@ func cmd_func_call(id C.int, ctx uintptr, argv uintptr, argc int) C.int {
     }
     c.LogDebug(buf.String())
     return C.int(cmd.Action(CmdContext{Ctx:c, Args:args}))
+}
+
+func toStringSlice(argv uintptr, argc int) []String {
+    args := make([]String, argc)
+    size := int(unsafe.Sizeof(C.uintptr_t(0)))
+    for i := 0; i < argc; i ++ {
+        ptr := unsafe.Pointer(argv + uintptr(size * i))
+        args[i] = String(uintptr(*(*C.uintptr_t)(ptr)))
+    }
+    return args
 }
 
 // typedef int (*RedisModuleCmdFunc) (RedisModuleCtx *ctx, RedisModuleString **argv, int argc);

@@ -13,8 +13,10 @@ type Module struct {
     DataTypes  []DataType `json:",omitempty"`
 
     // TODO add args
-    BeforeInit func(Ctx) error `json:"-"`
-    AfterInit  func(Ctx) error `json:"-"`
+    BeforeInit func(Ctx, []String) error `json:"-"`
+    AfterInit  func(Ctx, []String) error `json:"-"`
+    // When module unload
+    // ! Very unstable, try to avoid this
     OnUnload   func()
 
     // Compilation date

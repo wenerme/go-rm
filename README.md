@@ -130,6 +130,4 @@ func CreateMyMod() *rm.Module {
 
 ## TODO
 
-* Handle OnLoad argv, argc
-* Pass OnLoad argv, argc to BeforeInit and AfterInit
 * Find a proper limits for data types and var_args

@@ -557,7 +557,7 @@ func (ctx Ctx)Init(name string, version int, apiVersion int) int {
     defer C.free(unsafe.Pointer(c));
     return (int)(C.RedisModule_Init(ctx.ptr(), c, (C.int)(version), (C.int)(apiVersion)))
 }
-func (c Ctx)Load(mod *Module) int {
+func (c Ctx)Load(mod *Module, args []String) int {
     if mod == nil {
         c.LogWarn("Load Mod must not nil")
         return ERR
@@ -566,8 +566,9 @@ func (c Ctx)Load(mod *Module) int {
         c.LogWarn("Init mod %s failed", mod.Name)
         return ERR
     }
+    c.LogDebug("Load module %s %v", mod.Name, args)
     if mod.BeforeInit != nil {
-        err := mod.BeforeInit(c)
+        err := mod.BeforeInit(c, args)
         if err != nil {
             c.LogWarn("BeforeInit failed: %v", err)
             return ERR
@@ -582,7 +583,7 @@ func (c Ctx)Load(mod *Module) int {
     }
 
     if mod.AfterInit != nil {
-        err := mod.AfterInit(c)
+        err := mod.AfterInit(c, args)
         if err != nil {
             c.LogWarn("BeforeInit failed: %v", err)
             return ERR
