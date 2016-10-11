@@ -1,24 +1,21 @@
 # Go Redis module
-go-rm will let you write redis module in golang.
+go-rm 旨在通过 Golang 来实现 redis 模块.
 
-Read in | [中文](./README-zh_CN.md)
-----|----
-
-## Demo
+## 演示
 
 ```bash
-# Ensure you installed the newest redis
-# for example by using brew you can 
-# brew reinstall redis --with-jemalloc --HEAD
+# 确保你安装了最新的 redis, 不是最新版,而是 github 上的最新编译版本
+# 如果你能够使用 brew 命令,那么你可以通过以下方式来安装
+# brew reinstall redis --HEAD
 
-# Build redis module
+# 构建 redis 模块
 go get -u -v -buildmode=c-shared github.com/wenerme/go-rm/modules/hashex
 
-# Start redis-server and load out module with debug log
+# 启动 redis-server 并加载刚刚编译的模块,使用 debug 日志级别
 redis-server --loadmodule ~/go/pkg/*/github.com/wenerme/go-rm/modules/hashex* --loglevel debug
 ```
 
-__Connect to out redis-server__
+__客户端__
 
 ```
 $ redis-cli hsetget a a 5
@@ -29,11 +26,9 @@ $ redis-cli hsetget a a 3
 "3"
 ```
 
-Wow, it works, now you can distribute this redis module to you friends. :P
+## 如何实现一个 Redis 模块
 
-## How to write a module
-
-Implement a redis module is as easy as you write a cli app in go, this is all you need to implement above command, the source code is [here](https://github.com/wenerme/go-rm/blob/master/modules/hashex/hashex.go).
+实现一个 Redis 模块非常简单,就像是写一个 cli 程序一样,以下代码实现了上面演示的功能,源代码在[这里](https://github.com/wenerme/go-rm/blob/master/modules/hashex/hashex.go).
 
 ```go
 package main
@@ -41,7 +36,7 @@ package main
 import "github.com/wenerme/go-rm/rm"
 
 func main() {
-    // In case someone try to run this
+    // 避免改代码被运行
     rm.Run()
 }
 
@@ -87,12 +82,12 @@ func CreateMyMod() *rm.Module {
 }
 ```
 
-## Fantasy
+## 幻想
 
-* A module management module, supplies
+* 实现一个用于管理模块的命令,提供下述命令
     * mod.search
-        * Search module from repository(github?)
-        * Repository structure like this
+        * 从仓库(github?)搜索模块
+        * 仓库的结构类似于这样
         ```
         /namespace
             /module-name
@@ -104,17 +99,17 @@ func CreateMyMod() *rm.Module {
                 module-name.go     
         ```
     * mod.get
-        * Download module to ~/.redismodule
-        * Because module is write in go, so we can build for almost any platform
-        * We can use tag/commit to version the binary, so we can download the old version too
+        * 下载模块到 ~/.redismodule
+        * 因为模块是用 Go 写的,因此大多数平台都能使用
+        * 可以使用 tag 或者是提交 id 来标识版本
     * mod.install
-        * Install downloaded module by calling redis command
+        * 调用 redis 的命令来安装模块
     * ...
-* A cluster management module
-    * Easy to create/manage/monitor redis3 cluster
-* A json data type to demonstration how to add new data type in redis.
+* 集群管理模块
+    * 用于简化 redis 3 的集群 创建/管理/监控
+* 实现一个 json 数据类型,用于演示如果添加新的 redis 类型,支持以下命令
     * json.fmt key template
     * json.path key path \[pretty]
     * json.get key \[pretty]
     * json.set key value
-        * this will validate the json format
+        * 该操作会验证 value 是否为 json
