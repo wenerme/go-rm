@@ -1,12 +1,13 @@
 package rm
 
 type Module struct {
-    Name       string
-    Version    int
-    Commands   []Command
+    Name        string
+    Version     int
+    Commands    []Command
+    ModuleTypes []ModuleType
     //
-    BeforeInit func(Ctx) error
-    AfterInit  func(Ctx) error
+    BeforeInit  func(Ctx) error
+    AfterInit   func(Ctx) error
 }
 
 type Command struct {

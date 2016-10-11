@@ -1,7 +1,14 @@
 package rm
 
+/*
+#include <stdlib.h>
+ */
 import "C"
-import "fmt"
+import (
+    "fmt"
+    "unsafe"
+    "bytes"
+)
 
 //export RedisModule_OnLoad
 func RedisModule_OnLoad(ctx uintptr) C.int {
@@ -10,8 +17,21 @@ func RedisModule_OnLoad(ctx uintptr) C.int {
 
 //export cmd_func_call
 func cmd_func_call(id C.int, ctx uintptr, argv uintptr, argc int) C.int {
-    fmt.Println("Recv command function callback")
-    return C.int(getCommand(int(id)).Action(CmdContext{Ctx:Ctx(ctx)}))
+    args := make([]String, argc)
+    size := int(unsafe.Sizeof(C.uintptr_t(0)))
+    for i := 0; i < argc; i ++ {
+        ptr := unsafe.Pointer(argv + uintptr(size * i))
+        args[i] = String(uintptr(*(*C.uintptr_t)(ptr)))
+    }
+    c := Ctx(ctx)
+    cmd := getCommand(int(id))
+    buf := bytes.NewBufferString(fmt.Sprintf("CmdFuncCall(%v): %v", id, cmd.Name))
+    for i := 0; i < argc; i ++ {
+        buf.WriteString(" ")
+        buf.WriteString(args[i].String())
+    }
+    c.LogDebug(buf.String())
+    return C.int(cmd.Action(CmdContext{Ctx:c, Args:args}))
 }
 //export mt_rdb_load_call
 func mt_rdb_load_call(id int, rdb uintptr, encver int) uintptr {

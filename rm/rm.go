@@ -5,6 +5,7 @@ import "C"
 import (
     "unsafe"
     "fmt"
+    "github.com/wenerme/letsgo/cutil"
 )
 /* ---------------- Defines common between core and modules --------------- */
 
@@ -496,8 +497,8 @@ func (ctx Ctx)SelectDb(newid int) (int) {
 // call `RedisModule_CloseKey()` and `RedisModule_KeyType()` on a NULL
 // value.
 // void *RM_OpenKey(RedisModuleCtx *ctx, robj *keyname, int mode);
-func (ctx Ctx)OpenKey(keyname String, mode int) (unsafe.Pointer) {
-    return unsafe.Pointer(C.OpenKey(ctx.ptr(), keyname.ptr(), C.int(mode)))
+func (ctx Ctx)OpenKey(keyname String, mode int) (Key) {
+    return Key(C.OpenKey(ctx.ptr(), keyname.ptr(), C.int(mode)))
 }
 
 
@@ -533,7 +534,7 @@ func (ctx Ctx)Call(cmdname string, format string, args ... interface{}) (CallRep
 // a few lines of text.
 // void RM_Log(RedisModuleCtx *ctx, const char *levelstr, const char *fmt, ...);
 func (ctx Ctx)Log(l LogLevel, format string, args ... interface{}) () {
-    c := C.CString(fmt.Sprintf(format, args))
+    c := C.CString(fmt.Sprintf(format, args...))
     defer C.free(unsafe.Pointer(c));
     C.CtxLog(ctx.ptr(), C.int(l), c)
 }
@@ -666,8 +667,10 @@ func (reply CallReply)CallReplyProto(len *uint64) (unsafe.Pointer) {
 // and length of the string. The returned pointer and length should only
 // be used for read only accesses and never modified.
 // const char *RM_StringPtrLen(RedisModuleString *str, size_t *len);
-func (str String)StringPtrLen(len *uint64) (string) {
-    return C.GoString(C.StringPtrLen(str.ptr(), (*C.size_t)(len)))
+func (str String)String() (string) {
+    l := uint64(0)
+    ptr := C.StringPtrLen(str.ptr(), (*C.size_t)(&l))
+    return C.GoStringN(ptr, C.int(l))
 }
 
 // Convert the string into a long long integer, storing it at `*ll`.
@@ -686,7 +689,6 @@ func (str String)StringToLongLong(ll *int64) (int) {
 func (str String)StringToDouble(d *float64) (int) {
     return int(C.StringToDouble(str.ptr(), (*C.double)(d)))
 }
-
 // =============================================================================
 // ========================== Key functions
 // =============================================================================
@@ -1012,8 +1014,14 @@ func (key Key)ZsetRangePrev() (int) {
 // * The key was not open for writing.
 // * The key was associated with a non Hash value.
 // int RM_HashSet(RedisModuleKey *key, int flags, ...);
-func (key Key)HashSet(flags int) (int) {
-    return int(C.HashSet(key.ptr(), (C.int)(flags)))
+func (key Key)HashSet(flags int, args...interface{}) (int) {
+    p, err := cutil.VarArgsPtr(args...)
+    defer C.free(p)
+    if err != nil {
+        LogError("HashSet failed: %v", err)
+        return ERR
+    }
+    return int(C.HashSetVar(key.ptr(), (C.int)(flags), C.int(len(args)), (*C.intptr_t)(p)))
 }
 
 // Get fields from an hash value. This function is called using a variable
@@ -1057,8 +1065,15 @@ func (key Key)HashSet(flags int) (int) {
 // The returned RedisModuleString objects should be released with
 // `RedisModule_FreeString()`, or by enabling automatic memory management.
 // int RM_HashGet(RedisModuleKey *key, int flags, ...);
-func (key Key)HashGet(flags int) (int) {
-    return int(C.HashGet(key.ptr(), (C.int)(flags)))
+// args is RedisModuleString** RedisModuleString* or char* if flags include CFIELD
+func (key Key)HashGet(flags int, args...interface{}) (int) {
+    p, err := cutil.VarArgsPtr(args...)
+    defer C.free(p)
+    if err != nil {
+        LogError("HashGet failed: %v", err)
+        return ERR
+    }
+    return int(C.HashGetVar(key.ptr(), (C.int)(flags), C.int(len(args)), (*C.intptr_t)(p)))
 }
 
 // If the key is open for writing, set the specified module type object
@@ -1202,3 +1217,8 @@ func (io IO)EmitAOF(cmdname string, format string, args...interface{}) () {
     defer C.free(unsafe.Pointer(n))
     C.EmitAOF(io.ptr(), n, v)
 }
+
+
+// =============================================================================
+// ========================== Util functions
+// =============================================================================

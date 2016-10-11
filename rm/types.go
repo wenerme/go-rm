@@ -18,7 +18,6 @@ type String uintptr
 type IO uintptr
 type Key uintptr
 
-
 type CmdFunc func(args CmdContext) int
 
 type ZsetKey Key
@@ -31,6 +30,12 @@ func CreateString(ptr unsafe.Pointer) String {
 }
 func CreateCallReply(ptr unsafe.Pointer) CallReply {
     return CallReply(cutil.PtrToIntptr(ptr))
+}
+func NullString() String {
+    return CreateString(NullPointer())
+}
+func NullPointer() unsafe.Pointer {
+    return unsafe.Pointer(uintptr(0))
 }
 
 // ModuleType pattern [-_0-9A-Za-z]{9} suggest <typename>-<Vendor> not A{9}
@@ -55,25 +60,24 @@ const (
     LOG_WARNING
 )
 
-
 type CmdArgs struct {
     argv unsafe.Pointer
     argc int
 }
 type CmdContext struct {
-    Ctx Ctx
+    Ctx  Ctx
+    Args [] String
 }
 
 func init() {
     LogDebug("Init Go Redis module")
 }
 
-var LogErr = func(format string, args... interface{}) {
-    fmt.Fprintf(os.Stderr, format + "\n", args...)
-}
-
 var LogDebug = func(format string, args... interface{}) {
     fmt.Fprintf(os.Stdout, format + "\n", args...)
+}
+var LogError = func(format string, args... interface{}) {
+    fmt.Fprintf(os.Stderr, format + "\n", args...)
 }
 
 func (v String)ptr() unsafe.Pointer {
@@ -90,4 +94,19 @@ func (v IO)ptr() unsafe.Pointer {
 }
 func (v Key)ptr() unsafe.Pointer {
     return unsafe.Pointer(v)
+}
+func (v String)IsNull() bool {
+    return uintptr(v) == 0
+}
+func (v Ctx)IsNull() bool {
+    return uintptr(v) == 0
+}
+func (v CallReply)IsNull() bool {
+    return uintptr(v) == 0
+}
+func (v IO)IsNull() bool {
+    return uintptr(v) == 0
+}
+func (v Key)IsNull() bool {
+    return uintptr(v) == 0
 }
