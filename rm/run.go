@@ -22,6 +22,8 @@ Redis module {{.Name}} version {{.Version}} semver {{.SemVer}}
 {{- if .Author}} created by {{.Author}}
     {{- if .Email}} <{{.Email}}>{{end -}}
 {{- end}}
+Include Command({{len .Commands}}){{"{"}}{{range $_,$v := .Commands}} {{$v.Name}} {{end}}}
+Include DataType({{len .DataTypes}}){{"{"}}{{range $_,$v := .DataTypes}} {{$v.Name}} {{end}}}
 {{- if .Website}}
 Know more from {{.Website}}{{end}}
 

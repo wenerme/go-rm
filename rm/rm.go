@@ -576,7 +576,7 @@ func (c Ctx)Load(mod *Module, args []String) int {
 	}
 
 	for _, cmd := range mod.Commands {
-		if c.CreateCommand(&cmd) == ERR {
+		if c.CreateCommand(cmd) == ERR {
 			return ERR
 		}
 		c.LogVerbose("Create mod %s command %s", mod.Name, cmd.Name)
@@ -592,15 +592,16 @@ func (c Ctx)Load(mod *Module, args []String) int {
 	return OK
 }
 //
-func (c Ctx)CreateCommand(cmd *Command) int {
+func (c Ctx)CreateCommand(cmd Command) int {
 	id := commandId(cmd)
 	name := C.CString(cmd.Name)
 	defer C.free(unsafe.Pointer(name))
 	flags := C.CString(cmd.Flags)
 	defer C.free(unsafe.Pointer(flags))
+	c.LogDebug("Command %s id %v", cmd.Name, id)
 	return (int)(C.CreateCommandCallID(c.ptr(), C.int(id), name, flags, C.int(cmd.FirstKey), C.int(cmd.LastKey), C.int(cmd.KeyStep)))
 }
-func (c Ctx)CreateDataType(dt *DataType) uintptr {
+func (c Ctx)CreateDataType(dt DataType) uintptr {
 	if m, _ := regexp.MatchString("[-_0-9A-Za-z]{9}", dt.Name); !m {
 		c.LogWarn("Wrong datatype name need `[-_0-9A-Za-z]{9}` got %v", dt.Name)
 		return ERR
@@ -1027,6 +1028,7 @@ func (key Key)ZsetRangePrev() (int) {
 // * The key was associated with a non Hash value.
 // int RM_HashSet(RedisModuleKey *key, int flags, ...);
 func (key Key)HashSet(flags int, args...interface{}) (int) {
+	args = append(args, uintptr(0))
 	p, err := cutil.VarArgsPtr(args...)
 	defer C.free(p)
 	if err != nil {
@@ -1079,6 +1081,7 @@ func (key Key)HashSet(flags int, args...interface{}) (int) {
 // int RM_HashGet(RedisModuleKey *key, int flags, ...);
 // args is RedisModuleString** RedisModuleString* or char* if flags include CFIELD
 func (key Key)HashGet(flags int, args...interface{}) (int) {
+	args = append(args, uintptr(0))
 	p, err := cutil.VarArgsPtr(args...)
 	defer C.free(p)
 	if err != nil {
@@ -1087,7 +1090,11 @@ func (key Key)HashGet(flags int, args...interface{}) (int) {
 	}
 	return int(C.HashGetVar(key.ptr(), (C.int)(flags), C.int(len(args)), (*C.intptr_t)(p)))
 }
-
+func (key Key)HashExists(field String) bool {
+	exists := 0
+	key.HashGet(HASH_EXISTS, field, &exists)
+	return exists == 1
+}
 // If the key is open for writing, set the specified module type object
 // as the value of the key, deleting the old value if any.
 // On success `REDISMODULE_OK` is returned. If the key is not open for
