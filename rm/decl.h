@@ -12,4 +12,9 @@ extern void mt_rdb_save_call(int id, RedisModuleIO *rdb, void *value);
 extern void mt_aof_rewrite_call(int id, RedisModuleIO *aof, RedisModuleString *key, void *value);
 extern void mt_digest_call(int id, RedisModuleDigest *digest, void *value);
 extern void mt_free_call(int id, void *value);
+
+extern void redis_module_on_unload();
+void __attribute__((destructor)) OnUnload_Hack(void) {
+    redis_module_on_unload();
+}
 #endif

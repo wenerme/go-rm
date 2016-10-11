@@ -15,6 +15,12 @@ import (
 func RedisModule_OnLoad(ctx uintptr) C.int {
     return C.int(Ctx(ctx).Load(Mod))
 }
+//export redis_module_on_unload
+func redis_module_on_unload() {
+    if Mod != nil && Mod.OnUnload != nil {
+        Mod.OnUnload()
+    }
+}
 
 //export cmd_func_call
 func cmd_func_call(id C.int, ctx uintptr, argv uintptr, argc int) C.int {

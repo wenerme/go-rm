@@ -15,6 +15,7 @@ type Module struct {
     // TODO add args
     BeforeInit func(Ctx) error `json:"-"`
     AfterInit  func(Ctx) error `json:"-"`
+    OnUnload   func()
 
     // Compilation date
     Compiled   time.Time
