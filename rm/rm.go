@@ -3,10 +3,10 @@ package rm
 //#include "./rm.h"
 import "C"
 import (
-    "unsafe"
-    "fmt"
-    "github.com/wenerme/letsgo/cutil"
-    "regexp"
+	"unsafe"
+	"fmt"
+	"github.com/wenerme/letsgo/cutil"
+	"regexp"
 )
 /* ---------------- Defines common between core and modules --------------- */
 
@@ -80,13 +80,13 @@ const ERRORMSG_WRONGTYPE = C.REDISMODULE_ERRORMSG_WRONGTYPE
 // You should avoid to use malloc().
 // void *RM_Alloc(size_t bytes);
 func Alloc(bytes int) (unsafe.Pointer) {
-    return unsafe.Pointer(C.Alloc(C.size_t(bytes)))
+	return unsafe.Pointer(C.Alloc(C.size_t(bytes)))
 }
 
 // Use like realloc() for memory obtained with `RedisModule_Alloc()`.
 // void* RM_Realloc(void *ptr, size_t bytes);
 func Realloc(ptr unsafe.Pointer, bytes int) (unsafe.Pointer) {
-    return unsafe.Pointer(C.Realloc(ptr, C.size_t(bytes)))
+	return unsafe.Pointer(C.Realloc(ptr, C.size_t(bytes)))
 }
 
 // Use like free() for memory obtained by `RedisModule_Alloc()` and
@@ -94,13 +94,13 @@ func Realloc(ptr unsafe.Pointer, bytes int) (unsafe.Pointer) {
 // `RedisModule_Free()` memory allocated with malloc() inside your module.
 // void RM_Free(void *ptr);
 func Free(ptr unsafe.Pointer) () {
-    C.Free(ptr)
+	C.Free(ptr)
 }
 
 // Like strdup() but returns memory allocated with `RedisModule_Alloc()`.
 // char *RM_Strdup(const char *str);
 func Strdup(str unsafe.Pointer) (unsafe.Pointer) {
-    return unsafe.Pointer(C.Strdup((*C.char)(str)))
+	return unsafe.Pointer(C.Strdup((*C.char)(str)))
 }
 
 // Lookup the requested module API and store the function pointer into the
@@ -140,7 +140,7 @@ func Strdup(str unsafe.Pointer) (unsafe.Pointer) {
 // The function returns NULL if `bytes` is 0.
 // void *RM_PoolAlloc(RedisModuleCtx *ctx, size_t bytes);
 func (ctx Ctx)PoolAlloc(bytes int) (unsafe.Pointer) {
-    return unsafe.Pointer(C.PoolAlloc(ctx.ptr(), C.size_t(bytes)))
+	return unsafe.Pointer(C.PoolAlloc(ctx.ptr(), C.size_t(bytes)))
 }
 
 // Return non-zero if a module command, that was declared with the
@@ -148,7 +148,7 @@ func (ctx Ctx)PoolAlloc(bytes int) (unsafe.Pointer) {
 // and not to get executed. Otherwise zero is returned.
 // int RM_IsKeysPositionRequest(RedisModuleCtx *ctx);
 func (ctx Ctx)IsKeysPositionRequest() (int) {
-    return int(C.IsKeysPositionRequest(ctx.ptr()))
+	return int(C.IsKeysPositionRequest(ctx.ptr()))
 }
 
 // When a module command is called in order to obtain the position of
@@ -167,7 +167,7 @@ func (ctx Ctx)IsKeysPositionRequest() (int) {
 //  with a more complex structure.
 // void RM_KeyAtPos(RedisModuleCtx *ctx, int pos);
 func (ctx Ctx)KeyAtPos(pos int) () {
-    C.KeyAtPos(ctx.ptr(), C.int(pos))
+	C.KeyAtPos(ctx.ptr(), C.int(pos))
 }
 
 // And is supposed to always return `REDISMODULE_OK`.
@@ -219,7 +219,7 @@ func (ctx Ctx)KeyAtPos(pos int) () {
 // to use it.
 // void RM_SetModuleAttribs(RedisModuleCtx *ctx, const char *name, int ver, int apiver);
 func (ctx Ctx)SetModuleAttribs(name string, ver int, apiver int) () {
-    C.SetModuleAttribs(ctx.ptr(), C.CString(name), C.int(ver), C.int(apiver))
+	C.SetModuleAttribs(ctx.ptr(), C.CString(name), C.int(ver), C.int(apiver))
 }
 
 // Enable automatic memory management. See API.md for more information.
@@ -228,7 +228,7 @@ func (ctx Ctx)SetModuleAttribs(name string, ver int, apiver int) () {
 // that wants to use automatic memory.
 // void RM_AutoMemory(RedisModuleCtx *ctx);
 func (ctx Ctx)AutoMemory() () {
-    C.AutoMemory(ctx.ptr())
+	C.AutoMemory(ctx.ptr())
 }
 
 // Create a new module string object. The returned string must be freed
@@ -238,9 +238,9 @@ func (ctx Ctx)AutoMemory() () {
 // at `ptr`. No reference is retained to the passed buffer.
 // RedisModuleString *RM_CreateString(RedisModuleCtx *ctx, const char *ptr, size_t len);
 func (ctx Ctx)CreateString(ptr string, len int) (String) {
-    c := C.CString(ptr)
-    defer C.free(unsafe.Pointer(c));
-    return CreateString(unsafe.Pointer(C.CreateString(ctx.ptr(), c, C.size_t(len))))
+	c := C.CString(ptr)
+	defer C.free(unsafe.Pointer(c));
+	return CreateString(unsafe.Pointer(C.CreateString(ctx.ptr(), c, C.size_t(len))))
 }
 
 // Like `RedisModule_CreatString()`, but creates a string starting from a long long
@@ -250,7 +250,7 @@ func (ctx Ctx)CreateString(ptr string, len int) (String) {
 // enabling automatic memory management.
 // RedisModuleString *RM_CreateStringFromLongLong(RedisModuleCtx *ctx, long long ll);
 func (ctx Ctx)CreateStringFromLongLong(ll int64) (String) {
-    return CreateString(unsafe.Pointer(C.CreateStringFromLongLong(ctx.ptr(), C.longlong(ll))))
+	return CreateString(unsafe.Pointer(C.CreateStringFromLongLong(ctx.ptr(), C.longlong(ll))))
 }
 
 // Like `RedisModule_CreatString()`, but creates a string starting from an existing
@@ -260,7 +260,7 @@ func (ctx Ctx)CreateStringFromLongLong(ll int64) (String) {
 // enabling automatic memory management.
 // RedisModuleString *RM_CreateStringFromString(RedisModuleCtx *ctx, const RedisModuleString *str);
 func (ctx Ctx)CreateStringFromString(str String) (String) {
-    return CreateString(unsafe.Pointer(C.CreateStringFromString(ctx.ptr(), str.ptr())))
+	return CreateString(unsafe.Pointer(C.CreateStringFromString(ctx.ptr(), str.ptr())))
 }
 
 // Free a module string object obtained with one of the Redis modules API calls
@@ -271,28 +271,28 @@ func (ctx Ctx)CreateStringFromString(str String) (String) {
 // from the pool of string to release at the end.
 // void RM_FreeString(RedisModuleCtx *ctx, RedisModuleString *str);
 func (ctx Ctx)FreeString(str String) () {
-    C.FreeString(ctx.ptr(), str.ptr())
+	C.FreeString(ctx.ptr(), str.ptr())
 }
 
 //
 // int RM_WrongArity(RedisModuleCtx *ctx);
 func (ctx Ctx)WrongArity() (int) {
-    return int(C.WrongArity(ctx.ptr()))
+	return int(C.WrongArity(ctx.ptr()))
 }
 
 // Send an integer reply to the client, with the specified long long value.
 // The function always returns `REDISMODULE_OK`.
 // int RM_ReplyWithLongLong(RedisModuleCtx *ctx, long long ll);
 func (ctx Ctx)ReplyWithLongLong(ll int64) (int) {
-    return int(C.ReplyWithLongLong(ctx.ptr(), C.longlong(ll)))
+	return int(C.ReplyWithLongLong(ctx.ptr(), C.longlong(ll)))
 }
 
 // The function always returns `REDISMODULE_OK`.
 // int RM_ReplyWithError(RedisModuleCtx *ctx, const char *err);
 func (ctx Ctx)ReplyWithError(err string) (int) {
-    c := C.CString(err)
-    defer C.free(unsafe.Pointer(c));
-    return int(C.ReplyWithError(ctx.ptr(), c))
+	c := C.CString(err)
+	defer C.free(unsafe.Pointer(c));
+	return int(C.ReplyWithError(ctx.ptr(), c))
 }
 
 // Reply with a simple string (+... \r\n in RESP protocol). This replies
@@ -302,9 +302,9 @@ func (ctx Ctx)ReplyWithError(err string) (int) {
 // The function always returns `REDISMODULE_OK`.
 // int RM_ReplyWithSimpleString(RedisModuleCtx *ctx, const char *msg);
 func (ctx Ctx)ReplyWithSimpleString(msg string) (int) {
-    c := C.CString(msg)
-    defer C.free(unsafe.Pointer(c));
-    return int(C.ReplyWithSimpleString(ctx.ptr(), c))
+	c := C.CString(msg)
+	defer C.free(unsafe.Pointer(c));
+	return int(C.ReplyWithSimpleString(ctx.ptr(), c))
 }
 
 // Reply with an array type of 'len' elements. However 'len' other calls
@@ -320,7 +320,7 @@ func (ctx Ctx)ReplyWithSimpleString(msg string) (int) {
 // The function always returns `REDISMODULE_OK`.
 // int RM_ReplyWithArray(RedisModuleCtx *ctx, long len);
 func (ctx Ctx)ReplyWithArray(len int64) (int) {
-    return int(C.ReplyWithArray(ctx.ptr(), C.long(len)))
+	return int(C.ReplyWithArray(ctx.ptr(), C.long(len)))
 }
 
 // When `RedisModule_ReplyWithArray()` is used with the argument
@@ -350,7 +350,7 @@ func (ctx Ctx)ReplyWithArray(len int64) (int) {
 // that is not easy to calculate in advance the number of elements.
 // void RM_ReplySetArrayLength(RedisModuleCtx *ctx, long len);
 func (ctx Ctx)ReplySetArrayLength(len int64) () {
-    C.ReplySetArrayLength(ctx.ptr(), C.long(len))
+	C.ReplySetArrayLength(ctx.ptr(), C.long(len))
 }
 
 // Reply with a bulk string, taking in input a C buffer pointer and length.
@@ -358,8 +358,8 @@ func (ctx Ctx)ReplySetArrayLength(len int64) () {
 // The function always returns `REDISMODULE_OK`.
 // int RM_ReplyWithStringBuffer(RedisModuleCtx *ctx, const char *buf, size_t len);
 func (ctx Ctx)ReplyWithStringBuffer(buf []byte, len int) (int) {
-    // TODO free
-    return int(C.ReplyWithStringBuffer(ctx.ptr(), (*C.char)(C.CBytes(buf)), C.size_t(len)))
+	// TODO free
+	return int(C.ReplyWithStringBuffer(ctx.ptr(), (*C.char)(C.CBytes(buf)), C.size_t(len)))
 }
 
 // Reply with a bulk string, taking in input a RedisModuleString object.
@@ -367,7 +367,7 @@ func (ctx Ctx)ReplyWithStringBuffer(buf []byte, len int) (int) {
 // The function always returns `REDISMODULE_OK`.
 // int RM_ReplyWithString(RedisModuleCtx *ctx, RedisModuleString *str);
 func (ctx Ctx)ReplyWithString(str String) (int) {
-    return int(C.ReplyWithString(ctx.ptr(), str.ptr()))
+	return int(C.ReplyWithString(ctx.ptr(), str.ptr()))
 }
 
 // Reply to the client with a NULL. In the RESP protocol a NULL is encoded
@@ -376,7 +376,7 @@ func (ctx Ctx)ReplyWithString(str String) (int) {
 // The function always returns `REDISMODULE_OK`.
 // int RM_ReplyWithNull(RedisModuleCtx *ctx);
 func (ctx Ctx)ReplyWithNull() (int) {
-    return int(C.ReplyWithNull(ctx.ptr()))
+	return int(C.ReplyWithNull(ctx.ptr()))
 }
 
 // Reply exactly what a Redis command returned us with `RedisModule_Call()`.
@@ -387,7 +387,7 @@ func (ctx Ctx)ReplyWithNull() (int) {
 // The function always returns `REDISMODULE_OK`.
 // int RM_ReplyWithCallReply(RedisModuleCtx *ctx, RedisModuleCallReply *reply);
 func (ctx Ctx)ReplyWithCallReply(reply CallReply) (int) {
-    return int(C.ReplyWithCallReply(ctx.ptr(), unsafe.Pointer(reply.ptr())))
+	return int(C.ReplyWithCallReply(ctx.ptr(), unsafe.Pointer(reply.ptr())))
 }
 
 // Send a string reply obtained converting the double 'd' into a bulk string.
@@ -398,7 +398,7 @@ func (ctx Ctx)ReplyWithCallReply(reply CallReply) (int) {
 // The function always returns `REDISMODULE_OK`.
 // int RM_ReplyWithDouble(RedisModuleCtx *ctx, double d);
 func (ctx Ctx)ReplyWithDouble(d float64) (int) {
-    return int(C.ReplyWithDouble(ctx.ptr(), C.double(d)))
+	return int(C.ReplyWithDouble(ctx.ptr(), C.double(d)))
 }
 
 // Replicate the specified command and arguments to slaves and AOF, as effect
@@ -422,12 +422,12 @@ func (ctx Ctx)ReplyWithDouble(d float64) (int) {
 // or the command name does not belong to a known command.
 // int RM_Replicate(RedisModuleCtx *ctx, const char *cmdname, const char *fmt, ...);
 func (ctx Ctx)Replicate(cmdname string, format string, args ...interface{}) (int) {
-    c := C.CString(cmdname)
-    defer C.free(unsafe.Pointer(c));
-    msg := fmt.Sprintf(format, args...)
-    s := C.CString(msg)
-    defer C.free(unsafe.Pointer(s));
-    return int(C.Replicate(ctx.ptr(), c, s))
+	c := C.CString(cmdname)
+	defer C.free(unsafe.Pointer(c));
+	msg := fmt.Sprintf(format, args...)
+	s := C.CString(msg)
+	defer C.free(unsafe.Pointer(s));
+	return int(C.Replicate(ctx.ptr(), c, s))
 }
 
 // This function will replicate the command exactly as it was invoked
@@ -443,7 +443,7 @@ func (ctx Ctx)Replicate(cmdname string, format string, args ...interface{}) (int
 // The function always returns `REDISMODULE_OK`.
 // int RM_ReplicateVerbatim(RedisModuleCtx *ctx);
 func (ctx Ctx)ReplicateVerbatim() (int) {
-    return int(C.ReplicateVerbatim(ctx.ptr()))
+	return int(C.ReplicateVerbatim(ctx.ptr()))
 }
 
 // Return the ID of the current client calling the currently active module
@@ -459,13 +459,13 @@ func (ctx Ctx)ReplicateVerbatim() (int) {
 // to fetch the ID in the context the function was currently called.
 // unsigned long long RM_GetClientId(RedisModuleCtx *ctx);
 func (ctx Ctx)GetClientId() (uint64) {
-    return uint64(C.GetClientId(ctx.ptr()))
+	return uint64(C.GetClientId(ctx.ptr()))
 }
 
 // Return the currently selected DB.
 // int RM_GetSelectedDb(RedisModuleCtx *ctx);
 func (ctx Ctx)GetSelectedDb() (int) {
-    return int(C.GetSelectedDb(ctx.ptr()))
+	return int(C.GetSelectedDb(ctx.ptr()))
 }
 
 // Change the currently selected DB. Returns an error if the id
@@ -480,7 +480,7 @@ func (ctx Ctx)GetSelectedDb() (int) {
 // before in order to restore the old DB number before returning.
 // int RM_SelectDb(RedisModuleCtx *ctx, int newid);
 func (ctx Ctx)SelectDb(newid int) (int) {
-    return int(C.SelectDb(ctx.ptr(), C.int(newid)))
+	return int(C.SelectDb(ctx.ptr(), C.int(newid)))
 }
 
 // Return an handle representing a Redis key, so that it is possible
@@ -499,7 +499,7 @@ func (ctx Ctx)SelectDb(newid int) (int) {
 // value.
 // void *RM_OpenKey(RedisModuleCtx *ctx, robj *keyname, int mode);
 func (ctx Ctx)OpenKey(keyname String, mode int) (Key) {
-    return Key(C.OpenKey(ctx.ptr(), keyname.ptr(), C.int(mode)))
+	return Key(C.OpenKey(ctx.ptr(), keyname.ptr(), C.int(mode)))
 }
 
 
@@ -511,12 +511,12 @@ func (ctx Ctx)OpenKey(keyname String, mode int) (Key) {
 // EPERM:  operation in Cluster instance with key in non local slot.
 // RedisModuleCallReply *RM_Call(RedisModuleCtx *ctx, const char *cmdname, const char *fmt, ...);
 func (ctx Ctx)Call(cmdname string, format string, args ... interface{}) (CallReply) {
-    c := C.CString(cmdname)
-    defer C.free(unsafe.Pointer(c));
-    msg := fmt.Sprintf(format, args...)
-    s := C.CString(msg)
-    defer C.free(unsafe.Pointer(s));
-    return CreateCallReply(unsafe.Pointer(C.Call(ctx.ptr(), c, s)))
+	c := C.CString(cmdname)
+	defer C.free(unsafe.Pointer(c));
+	msg := fmt.Sprintf(format, args...)
+	s := C.CString(msg)
+	defer C.free(unsafe.Pointer(s));
+	return CreateCallReply(unsafe.Pointer(C.Call(ctx.ptr(), c, s)))
 }
 
 
@@ -535,80 +535,80 @@ func (ctx Ctx)Call(cmdname string, format string, args ... interface{}) (CallRep
 // a few lines of text.
 // void RM_Log(RedisModuleCtx *ctx, const char *levelstr, const char *fmt, ...);
 func (ctx Ctx)Log(l LogLevel, format string, args ... interface{}) () {
-    c := C.CString(fmt.Sprintf(format, args...))
-    defer C.free(unsafe.Pointer(c));
-    C.CtxLog(ctx.ptr(), C.int(l), c)
+	c := C.CString(fmt.Sprintf(format, args...))
+	defer C.free(unsafe.Pointer(c));
+	C.CtxLog(ctx.ptr(), C.int(l), c)
 }
 func (ctx Ctx)LogDebug(format string, args ... interface{}) () {
-    ctx.Log(LOG_DEBUG, format, args...)
+	ctx.Log(LOG_DEBUG, format, args...)
 }
 func (ctx Ctx)LogVerbose(format string, args ... interface{}) () {
-    ctx.Log(LOG_VERBOSE, format, args...)
+	ctx.Log(LOG_VERBOSE, format, args...)
 }
 func (ctx Ctx)LogNotice(format string, args ... interface{}) () {
-    ctx.Log(LOG_NOTICE, format, args...)
+	ctx.Log(LOG_NOTICE, format, args...)
 }
 func (ctx Ctx)LogWarn(format string, args ... interface{}) () {
-    ctx.Log(LOG_WARNING, format, args...)
+	ctx.Log(LOG_WARNING, format, args...)
 }
 
 func (ctx Ctx)Init(name string, version int, apiVersion int) int {
-    c := C.CString(name)
-    defer C.free(unsafe.Pointer(c));
-    return (int)(C.RedisModule_Init(ctx.ptr(), c, (C.int)(version), (C.int)(apiVersion)))
+	c := C.CString(name)
+	defer C.free(unsafe.Pointer(c));
+	return (int)(C.RedisModule_Init(ctx.ptr(), c, (C.int)(version), (C.int)(apiVersion)))
 }
 func (c Ctx)Load(mod *Module, args []String) int {
-    if mod == nil {
-        c.LogWarn("Load Mod must not nil")
-        return ERR
-    }
-    if c.Init(mod.Name, mod.Version, APIVER_1) == ERR {
-        c.LogWarn("Init mod %s failed", mod.Name)
-        return ERR
-    }
-    c.LogDebug("Load module %s %v", mod.Name, args)
-    if mod.BeforeInit != nil {
-        err := mod.BeforeInit(c, args)
-        if err != nil {
-            c.LogWarn("BeforeInit failed: %v", err)
-            return ERR
-        }
-    }
+	if mod == nil {
+		c.LogWarn("Load Mod must not nil")
+		return ERR
+	}
+	if c.Init(mod.Name, mod.Version, APIVER_1) == ERR {
+		c.LogWarn("Init mod %s failed", mod.Name)
+		return ERR
+	}
+	c.LogDebug("Load module %s %v", mod.Name, args)
+	if mod.BeforeInit != nil {
+		err := mod.BeforeInit(c, args)
+		if err != nil {
+			c.LogWarn("BeforeInit failed: %v", err)
+			return ERR
+		}
+	}
 
-    for _, cmd := range mod.Commands {
-        if c.CreateCommand(&cmd) == ERR {
-            return ERR
-        }
-        c.LogVerbose("Create mod %s command %s", mod.Name, cmd.Name)
-    }
+	for _, cmd := range mod.Commands {
+		if c.CreateCommand(&cmd) == ERR {
+			return ERR
+		}
+		c.LogVerbose("Create mod %s command %s", mod.Name, cmd.Name)
+	}
 
-    if mod.AfterInit != nil {
-        err := mod.AfterInit(c, args)
-        if err != nil {
-            c.LogWarn("BeforeInit failed: %v", err)
-            return ERR
-        }
-    }
-    return OK
+	if mod.AfterInit != nil {
+		err := mod.AfterInit(c, args)
+		if err != nil {
+			c.LogWarn("BeforeInit failed: %v", err)
+			return ERR
+		}
+	}
+	return OK
 }
 //
 func (c Ctx)CreateCommand(cmd *Command) int {
-    id := commandId(cmd)
-    name := C.CString(cmd.Name)
-    defer C.free(unsafe.Pointer(name))
-    flags := C.CString(cmd.Flags)
-    defer C.free(unsafe.Pointer(flags))
-    return (int)(C.CreateCommandCallID(c.ptr(), C.int(id), name, flags, C.int(cmd.FirstKey), C.int(cmd.LastKey), C.int(cmd.KeyStep)))
+	id := commandId(cmd)
+	name := C.CString(cmd.Name)
+	defer C.free(unsafe.Pointer(name))
+	flags := C.CString(cmd.Flags)
+	defer C.free(unsafe.Pointer(flags))
+	return (int)(C.CreateCommandCallID(c.ptr(), C.int(id), name, flags, C.int(cmd.FirstKey), C.int(cmd.LastKey), C.int(cmd.KeyStep)))
 }
 func (c Ctx)CreateDataType(dt *DataType) uintptr {
-    if m, _ := regexp.MatchString("[-_0-9A-Za-z]{9}", dt.Name); !m {
-        c.LogWarn("Wrong datatype name need `[-_0-9A-Za-z]{9}` got %v", dt.Name)
-        return ERR
-    }
-    id := dataTypeId(dt)
-    name := C.CString(dt.Name)
-    defer C.free(unsafe.Pointer(name))
-    return uintptr(C.CreateDataTypeCallID(c.ptr(), C.int(id), name, C.int(dt.EncVer)))
+	if m, _ := regexp.MatchString("[-_0-9A-Za-z]{9}", dt.Name); !m {
+		c.LogWarn("Wrong datatype name need `[-_0-9A-Za-z]{9}` got %v", dt.Name)
+		return ERR
+	}
+	id := dataTypeId(dt)
+	name := C.CString(dt.Name)
+	defer C.free(unsafe.Pointer(name))
+	return uintptr(C.CreateDataTypeCallID(c.ptr(), C.int(id), name, C.int(dt.EncVer)))
 }
 
 
@@ -622,52 +622,52 @@ func (c Ctx)CreateDataType(dt *DataType) uintptr {
 // if called by the module API.
 // void RM_FreeCallReply(RedisModuleCallReply *reply);
 func (reply CallReply)FreeCallReply() () {
-    C.FreeCallReply(reply.ptr())
+	C.FreeCallReply(reply.ptr())
 }
 
 // Return the reply type.
 // int RM_CallReplyType(RedisModuleCallReply *reply);
 func (reply CallReply)CallReplyType() (int) {
-    return int(C.CallReplyType(reply.ptr()))
+	return int(C.CallReplyType(reply.ptr()))
 }
 
 // Return the reply type length, where applicable.
 // size_t RM_CallReplyLength(RedisModuleCallReply *reply);
 func (reply CallReply)CallReplyLength() (int) {
-    return int(C.CallReplyLength(reply.ptr()))
+	return int(C.CallReplyLength(reply.ptr()))
 }
 
 // Return the 'idx'-th nested call reply element of an array reply, or NULL
 // if the reply type is wrong or the index is out of range.
 // RedisModuleCallReply *RM_CallReplyArrayElement(RedisModuleCallReply *reply, size_t idx);
 func (reply CallReply)CallReplyArrayElement(idx int) (CallReply) {
-    return CreateCallReply(unsafe.Pointer(C.CallReplyArrayElement(reply.ptr(), C.size_t(idx))))
+	return CreateCallReply(unsafe.Pointer(C.CallReplyArrayElement(reply.ptr(), C.size_t(idx))))
 }
 
 // Return the long long of an integer reply.
 // long long RM_CallReplyInteger(RedisModuleCallReply *reply);
 func (reply CallReply)CallReplyInteger() (int64) {
-    return int64(C.CallReplyInteger(reply.ptr()))
+	return int64(C.CallReplyInteger(reply.ptr()))
 }
 
 // Return the pointer and length of a string or error reply.
 // const char *RM_CallReplyStringPtr(RedisModuleCallReply *reply, size_t *len);
 func (reply CallReply)CallReplyStringPtr(len *int) (unsafe.Pointer) {
-    return unsafe.Pointer(C.CallReplyStringPtr(reply.ptr(), (*C.size_t)(unsafe.Pointer(len))))
+	return unsafe.Pointer(C.CallReplyStringPtr(reply.ptr(), (*C.size_t)(unsafe.Pointer(len))))
 }
 
 // Return a new string object from a call reply of type string, error or
 // integer. Otherwise (wrong reply type) return NULL.
 // RedisModuleString *RM_CreateStringFromCallReply(RedisModuleCallReply *reply);
 func (reply CallReply)CreateStringFromCallReply() (String) {
-    return CreateString(unsafe.Pointer(C.CreateStringFromCallReply(reply.ptr())))
+	return CreateString(unsafe.Pointer(C.CreateStringFromCallReply(reply.ptr())))
 }
 
 // Return a pointer, and a length, to the protocol returned by the command
 // that returned the reply object.
 // const char *RM_CallReplyProto(RedisModuleCallReply *reply, size_t *len);
 func (reply CallReply)CallReplyProto(len *uint64) (unsafe.Pointer) {
-    return unsafe.Pointer(C.CallReplyProto(reply.ptr(), (*C.size_t)(len)))
+	return unsafe.Pointer(C.CallReplyProto(reply.ptr(), (*C.size_t)(len)))
 }
 
 // =============================================================================
@@ -680,9 +680,9 @@ func (reply CallReply)CallReplyProto(len *uint64) (unsafe.Pointer) {
 // be used for read only accesses and never modified.
 // const char *RM_StringPtrLen(RedisModuleString *str, size_t *len);
 func (str String)String() (string) {
-    l := uint64(0)
-    ptr := C.StringPtrLen(str.ptr(), (*C.size_t)(&l))
-    return C.GoStringN(ptr, C.int(l))
+	l := uint64(0)
+	ptr := C.StringPtrLen(str.ptr(), (*C.size_t)(&l))
+	return C.GoStringN(ptr, C.int(l))
 }
 
 // Convert the string into a long long integer, storing it at `*ll`.
@@ -691,7 +691,7 @@ func (str String)String() (string) {
 // is returned.
 // int RM_StringToLongLong(RedisModuleString *str, long long *ll);
 func (str String)StringToLongLong(ll *int64) (int) {
-    return int(C.StringToLongLong(str.ptr(), (*C.longlong)(ll)))
+	return int(C.StringToLongLong(str.ptr(), (*C.longlong)(ll)))
 }
 
 // Convert the string into a double, storing it at `*d`.
@@ -699,7 +699,7 @@ func (str String)StringToLongLong(ll *int64) (int) {
 // not a valid string representation of a double value.
 // int RM_StringToDouble(RedisModuleString *str, double *d);
 func (str String)StringToDouble(d *float64) (int) {
-    return int(C.StringToDouble(str.ptr(), (*C.double)(d)))
+	return int(C.StringToDouble(str.ptr(), (*C.double)(d)))
 }
 // =============================================================================
 // ========================== Key functions
@@ -709,14 +709,14 @@ func (str String)StringToDouble(d *float64) (int) {
 // Close a key handle.
 // void RM_CloseKey(RedisModuleKey *key);
 func (key Key)CloseKey() () {
-    C.CloseKey(key.ptr())
+	C.CloseKey(key.ptr())
 }
 
 // Return the type of the key. If the key pointer is NULL then
 // `REDISMODULE_KEYTYPE_EMPTY` is returned.
 // int RM_KeyType(RedisModuleKey *key);
 func (key Key)KeyType() (int) {
-    return int(C.KeyType(key.ptr()))
+	return int(C.KeyType(key.ptr()))
 }
 
 // Return the length of the value associated with the key.
@@ -726,7 +726,7 @@ func (key Key)KeyType() (int) {
 // If the key pointer is NULL or the key is empty, zero is returned.
 // size_t RM_ValueLength(RedisModuleKey *key);
 func (key Key)ValueLength() (int) {
-    return int(C.ValueLength(key.ptr()))
+	return int(C.ValueLength(key.ptr()))
 }
 
 // If the key is open for writing, remove it, and setup the key to
@@ -735,7 +735,7 @@ func (key Key)ValueLength() (int) {
 // writing `REDISMODULE_ERR` is returned.
 // int RM_DeleteKey(RedisModuleKey *key);
 func (key Key)DeleteKey() (int) {
-    return int(C.DeleteKey(key.ptr()))
+	return int(C.DeleteKey(key.ptr()))
 }
 
 // Return the key expire value, as milliseconds of remaining TTL.
@@ -743,7 +743,7 @@ func (key Key)DeleteKey() (int) {
 // `REDISMODULE_NO_EXPIRE` is returned.
 // mstime_t RM_GetExpire(RedisModuleKey *key);
 func (key Key)GetExpire() (uint64) {
-    return uint64(C.GetExpire(key.ptr()))
+	return uint64(C.GetExpire(key.ptr()))
 }
 
 // Set a new expire for the key. If the special expire
@@ -757,7 +757,7 @@ func (key Key)GetExpire() (uint64) {
 // the key was not open for writing or is an empty key.
 // int RM_SetExpire(RedisModuleKey *key, mstime_t expire);
 func (key Key)SetExpire(expire uint64) (int) {
-    return int(C.SetExpire(key.ptr(), (C.mstime_t)(expire)))
+	return int(C.SetExpire(key.ptr(), (C.mstime_t)(expire)))
 }
 
 // If the key is open for writing, set the specified string 'str' as the
@@ -766,7 +766,7 @@ func (key Key)SetExpire(expire uint64) (int) {
 // writing or there is an active iterator, `REDISMODULE_ERR` is returned.
 // int RM_StringSet(RedisModuleKey *key, RedisModuleString *str);
 func (key Key)StringSet(str String) (int) {
-    return int(C.StringSet(key.ptr(), str.ptr()))
+	return int(C.StringSet(key.ptr(), str.ptr()))
 }
 
 // Prepare the key associated string value for DMA access, and returns
@@ -799,7 +799,7 @@ func (key Key)StringSet(str String) (int) {
 // the string, and later call StringDMA() again to get the pointer.
 // char *RM_StringDMA(RedisModuleKey *key, size_t *len, int mode);
 func (key Key)StringDMA(len *uint64, mode int) (unsafe.Pointer) {
-    return unsafe.Pointer(C.StringDMA(key.ptr(), (*C.size_t)(len), C.int(mode)))
+	return unsafe.Pointer(C.StringDMA(key.ptr(), (*C.size_t)(len), C.int(mode)))
 }
 
 // If the string is open for writing and is of string type, resize it, padding
@@ -816,7 +816,7 @@ func (key Key)StringDMA(len *uint64, mode int) (unsafe.Pointer) {
 // unless the new length value requested is zero.
 // int RM_StringTruncate(RedisModuleKey *key, size_t newlen);
 func (key Key)StringTruncate(newlen int) (int) {
-    return int(C.StringTruncate(key.ptr(), (C.size_t)(newlen)))
+	return int(C.StringTruncate(key.ptr(), (C.size_t)(newlen)))
 }
 
 // Push an element into a list, on head or tail depending on 'where' argumnet.
@@ -825,7 +825,7 @@ func (key Key)StringTruncate(newlen int) (int) {
 // type) `REDISMODULE_ERR` is returned, otherwise `REDISMODULE_OK` is returned.
 // int RM_ListPush(RedisModuleKey *key, int where, RedisModuleString *ele);
 func (key Key)ListPush(where int, ele String) (int) {
-    return int(C.ListPush(key.ptr(), C.int(where), ele.ptr()))
+	return int(C.ListPush(key.ptr(), C.int(where), ele.ptr()))
 }
 
 // Pop an element from the list, and returns it as a module string object
@@ -837,7 +837,7 @@ func (key Key)ListPush(where int, ele String) (int) {
 // 3) The key is not a list.
 // RedisModuleString *RM_ListPop(RedisModuleKey *key, int where);
 func (key Key)ListPop(where int) (String) {
-    return CreateString(unsafe.Pointer(C.ListPop(key.ptr(), C.int(where))))
+	return CreateString(unsafe.Pointer(C.ListPop(key.ptr(), C.int(where))))
 }
 
 
@@ -873,7 +873,7 @@ func (key Key)ListPop(where int) (String) {
 // * 'score' double value is not a number (NaN).
 // int RM_ZsetAdd(RedisModuleKey *key, double score, RedisModuleString *ele, int *flagsptr);
 func (key Key)ZsetAdd(score float64, ele String, flagsptr *int32) (int) {
-    return int(C.ZsetAdd(key.ptr(), (C.double)(score), ele.ptr(), (*C.int)(flagsptr)))
+	return int(C.ZsetAdd(key.ptr(), (C.double)(score), ele.ptr(), (*C.int)(flagsptr)))
 }
 
 // This function works exactly like `RM_ZsetAdd()`, but instead of setting
@@ -891,7 +891,7 @@ func (key Key)ZsetAdd(score float64, ele String, flagsptr *int32) (int) {
 // is returned.
 // int RM_ZsetIncrby(RedisModuleKey *key, double score, RedisModuleString *ele, int *flagsptr, double *newscore);
 func (key Key)ZsetIncrby(score float64, ele String, flagsptr *int32, newscore *float64) (int) {
-    return int(C.ZsetIncrby(key.ptr(), (C.double)(score), ele.ptr(), (*C.int)(flagsptr), (*C.double)(newscore)))
+	return int(C.ZsetIncrby(key.ptr(), (C.double)(score), ele.ptr(), (*C.int)(flagsptr), (*C.double)(newscore)))
 }
 
 // Remove the specified element from the sorted set.
@@ -914,7 +914,7 @@ func (key Key)ZsetIncrby(score float64, ele String, flagsptr *int32, newscore *f
 // Empty keys will be handled correctly by doing nothing.
 // int RM_ZsetRem(RedisModuleKey *key, RedisModuleString *ele, int *deleted);
 func (key Key)ZsetRem(ele String, deleted *int32) (int) {
-    return int(C.ZsetRem(key.ptr(), ele.ptr(), (*C.int)(deleted)))
+	return int(C.ZsetRem(key.ptr(), ele.ptr(), (*C.int)(deleted)))
 }
 
 // On success retrieve the double score associated at the sorted set element
@@ -926,19 +926,19 @@ func (key Key)ZsetRem(ele String, deleted *int32) (int) {
 // * The key is an open empty key.
 // int RM_ZsetScore(RedisModuleKey *key, RedisModuleString *ele, double *score);
 func (key Key)ZsetScore(ele String, score *float64) (int) {
-    return int(C.ZsetScore(key.ptr(), ele.ptr(), (*C.double)(score)))
+	return int(C.ZsetScore(key.ptr(), ele.ptr(), (*C.double)(score)))
 }
 
 // Stop a sorted set iteration.
 // void RM_ZsetRangeStop(RedisModuleKey *key);
 func (key Key)ZsetRangeStop() () {
-    C.ZsetRangeStop(key.ptr())
+	C.ZsetRangeStop(key.ptr())
 }
 
 // Return the "End of range" flag value to signal the end of the iteration.
 // int RM_ZsetRangeEndReached(RedisModuleKey *key);
 func (key Key)ZsetRangeEndReached() (int) {
-    return int(C.ZsetRangeEndReached(key.ptr()))
+	return int(C.ZsetRangeEndReached(key.ptr()))
 }
 
 // Setup a sorted set iterator seeking the first element in the specified
@@ -958,14 +958,14 @@ func (key Key)ZsetRangeEndReached() (int) {
 // inclusive.
 // int RM_ZsetFirstInScoreRange(RedisModuleKey *key, double min, double max, int minex, int maxex);
 func (key Key)ZsetFirstInScoreRange(min float64, max float64, minex int, maxex int) (int) {
-    return int(C.ZsetFirstInScoreRange(key.ptr(), (C.double)(min), (C.double)(max), (C.int)(minex), (C.int)(maxex)))
+	return int(C.ZsetFirstInScoreRange(key.ptr(), (C.double)(min), (C.double)(max), (C.int)(minex), (C.int)(maxex)))
 }
 
 // Exactly like `RedisModule_ZsetFirstInScoreRange()` but the last element of
 // the range is selected for the start of the iteration instead.
 // int RM_ZsetLastInScoreRange(RedisModuleKey *key, double min, double max, int minex, int maxex);
 func (key Key)ZsetLastInScoreRange(min float64, max float64, minex int, maxex int) (int) {
-    return int(C.ZsetLastInScoreRange(key.ptr(), (C.double)(min), (C.double)(max), (C.int)(minex), (C.int)(maxex)))
+	return int(C.ZsetLastInScoreRange(key.ptr(), (C.double)(min), (C.double)(max), (C.int)(minex), (C.int)(maxex)))
 }
 
 // Setup a sorted set iterator seeking the first element in the specified
@@ -982,14 +982,14 @@ func (key Key)ZsetLastInScoreRange(min float64, max float64, minex int, maxex in
 // ASAP after the iterator is setup.
 // int RM_ZsetFirstInLexRange(RedisModuleKey *key, RedisModuleString *min, RedisModuleString *max);
 func (key Key)ZsetFirstInLexRange(min String, max String) (int) {
-    return int(C.ZsetFirstInLexRange(key.ptr(), min.ptr(), max.ptr()))
+	return int(C.ZsetFirstInLexRange(key.ptr(), min.ptr(), max.ptr()))
 }
 
 // Exactly like `RedisModule_ZsetFirstInLexRange()` but the last element of
 // the range is selected for the start of the iteration instead.
 // int RM_ZsetLastInLexRange(RedisModuleKey *key, RedisModuleString *min, RedisModuleString *max);
 func (key Key)ZsetLastInLexRange(min String, max String) (int) {
-    return int(C.ZsetLastInLexRange(key.ptr(), min.ptr(), max.ptr()))
+	return int(C.ZsetLastInLexRange(key.ptr(), min.ptr(), max.ptr()))
 }
 
 // Return the current sorted set element of an active sorted set iterator
@@ -997,7 +997,7 @@ func (key Key)ZsetLastInLexRange(min String, max String) (int) {
 // element.
 // RedisModuleString *RM_ZsetRangeCurrentElement(RedisModuleKey *key, double *score);
 func (key Key)ZsetRangeCurrentElement(score *float64) (String) {
-    return CreateString(unsafe.Pointer(C.ZsetRangeCurrentElement(key.ptr(), (*C.double)(score))))
+	return CreateString(unsafe.Pointer(C.ZsetRangeCurrentElement(key.ptr(), (*C.double)(score))))
 }
 
 // Go to the next element of the sorted set iterator. Returns 1 if there was
@@ -1005,7 +1005,7 @@ func (key Key)ZsetRangeCurrentElement(score *float64) (String) {
 // does not include any item at all.
 // int RM_ZsetRangeNext(RedisModuleKey *key);
 func (key Key)ZsetRangeNext() (int) {
-    return int(C.ZsetRangeNext(key.ptr()))
+	return int(C.ZsetRangeNext(key.ptr()))
 }
 
 // Go to the previous element of the sorted set iterator. Returns 1 if there was
@@ -1013,7 +1013,7 @@ func (key Key)ZsetRangeNext() (int) {
 // does not include any item at all.
 // int RM_ZsetRangePrev(RedisModuleKey *key);
 func (key Key)ZsetRangePrev() (int) {
-    return int(C.ZsetRangePrev(key.ptr()))
+	return int(C.ZsetRangePrev(key.ptr()))
 }
 
 // Return value:
@@ -1027,13 +1027,13 @@ func (key Key)ZsetRangePrev() (int) {
 // * The key was associated with a non Hash value.
 // int RM_HashSet(RedisModuleKey *key, int flags, ...);
 func (key Key)HashSet(flags int, args...interface{}) (int) {
-    p, err := cutil.VarArgsPtr(args...)
-    defer C.free(p)
-    if err != nil {
-        LogError("HashSet failed: %v", err)
-        return ERR
-    }
-    return int(C.HashSetVar(key.ptr(), (C.int)(flags), C.int(len(args)), (*C.intptr_t)(p)))
+	p, err := cutil.VarArgsPtr(args...)
+	defer C.free(p)
+	if err != nil {
+		LogError("HashSet failed: %v", err)
+		return ERR
+	}
+	return int(C.HashSetVar(key.ptr(), (C.int)(flags), C.int(len(args)), (*C.intptr_t)(p)))
 }
 
 // Get fields from an hash value. This function is called using a variable
@@ -1079,13 +1079,13 @@ func (key Key)HashSet(flags int, args...interface{}) (int) {
 // int RM_HashGet(RedisModuleKey *key, int flags, ...);
 // args is RedisModuleString** RedisModuleString* or char* if flags include CFIELD
 func (key Key)HashGet(flags int, args...interface{}) (int) {
-    p, err := cutil.VarArgsPtr(args...)
-    defer C.free(p)
-    if err != nil {
-        LogError("HashGet failed: %v", err)
-        return ERR
-    }
-    return int(C.HashGetVar(key.ptr(), (C.int)(flags), C.int(len(args)), (*C.intptr_t)(p)))
+	p, err := cutil.VarArgsPtr(args...)
+	defer C.free(p)
+	if err != nil {
+		LogError("HashGet failed: %v", err)
+		return ERR
+	}
+	return int(C.HashGetVar(key.ptr(), (C.int)(flags), C.int(len(args)), (*C.intptr_t)(p)))
 }
 
 // If the key is open for writing, set the specified module type object
@@ -1094,7 +1094,7 @@ func (key Key)HashGet(flags int, args...interface{}) (int) {
 // writing or there is an active iterator, `REDISMODULE_ERR` is returned.
 // int RM_ModuleTypeSetValue(RedisModuleKey *key, moduleType *mt, void *value);
 func (key Key)ModuleTypeSetValue(mt unsafe.Pointer, value unsafe.Pointer) (int) {
-    return int(C.ModuleTypeSetValue(key.ptr(), mt, value))
+	return int(C.ModuleTypeSetValue(key.ptr(), mt, value))
 }
 
 // Assuming `RedisModule_KeyType()` returned `REDISMODULE_KEYTYPE_MODULE` on
@@ -1104,7 +1104,7 @@ func (key Key)ModuleTypeSetValue(mt unsafe.Pointer, value unsafe.Pointer) (int) 
 // then NULL is returned instead.
 // moduleType *RM_ModuleTypeGetType(RedisModuleKey *key);
 func (key Key)ModuleTypeGetType() (unsafe.Pointer) {
-    return unsafe.Pointer(C.ModuleTypeGetType(key.ptr()))
+	return unsafe.Pointer(C.ModuleTypeGetType(key.ptr()))
 }
 
 // Assuming `RedisModule_KeyType()` returned `REDISMODULE_KEYTYPE_MODULE` on
@@ -1115,7 +1115,7 @@ func (key Key)ModuleTypeGetType() (unsafe.Pointer) {
 // then NULL is returned instead.
 // void *RM_ModuleTypeGetValue(RedisModuleKey *key);
 func (key Key)ModuleTypeGetValue() (unsafe.Pointer) {
-    return unsafe.Pointer(C.ModuleTypeGetValue(key.ptr()))
+	return unsafe.Pointer(C.ModuleTypeGetValue(key.ptr()))
 }
 
 
@@ -1129,7 +1129,7 @@ func (key Key)ModuleTypeGetValue() (unsafe.Pointer) {
 // data types.
 // void RM_SaveUnsigned(RedisModuleIO *io, uint64_t value);
 func (io IO)SaveUnsigned(value uint64) () {
-    C.SaveUnsigned(io.ptr(), C.uint64_t(value))
+	C.SaveUnsigned(io.ptr(), C.uint64_t(value))
 }
 
 // Load an unsigned 64 bit value from the RDB file. This function should only
@@ -1137,19 +1137,19 @@ func (io IO)SaveUnsigned(value uint64) () {
 // new data types.
 // uint64_t RM_LoadUnsigned(RedisModuleIO *io);
 func (io IO)LoadUnsigned() (uint64) {
-    return uint64(C.LoadUnsigned(io.ptr()))
+	return uint64(C.LoadUnsigned(io.ptr()))
 }
 
 // Like `RedisModule_SaveUnsigned()` but for signed 64 bit values.
 // void RM_SaveSigned(RedisModuleIO *io, int64_t value);
 func (io IO)SaveSigned(value int64) () {
-    C.SaveSigned(io.ptr(), C.int64_t(value))
+	C.SaveSigned(io.ptr(), C.int64_t(value))
 }
 
 // Like `RedisModule_LoadUnsigned()` but for signed 64 bit values.
 // int64_t RM_LoadSigned(RedisModuleIO *io);
 func (io IO)LoadSigned() (int64) {
-    return int64(C.LoadSigned(io.ptr()))
+	return int64(C.LoadSigned(io.ptr()))
 }
 
 // In the context of the rdb_save method of a module type, saves a
@@ -1160,17 +1160,17 @@ func (io IO)LoadSigned() (int64) {
 // the RDB file.
 // void RM_SaveString(RedisModuleIO *io, RedisModuleString *s);
 func (io IO)SaveString(s String) () {
-    C.SaveString(io.ptr(), s.ptr())
+	C.SaveString(io.ptr(), s.ptr())
 }
 
 // Like `RedisModule_SaveString()` but takes a raw C pointer and length
 // as input.
 // void RM_SaveStringBuffer(RedisModuleIO *io, const char *str, size_t len);
 func (io IO)SaveStringBuffer(str []byte, len int) () {
-    // TODO useless
-    v := C.CBytes(str[:len])
-    defer C.free(unsafe.Pointer(v))
-    C.SaveStringBuffer(io.ptr(), (*C.char)(v), C.size_t(len))
+	// TODO useless
+	v := C.CBytes(str[:len])
+	defer C.free(unsafe.Pointer(v))
+	C.SaveStringBuffer(io.ptr(), (*C.char)(v), C.size_t(len))
 }
 
 // In the context of the rdb_load method of a module data type, loads a string
@@ -1184,7 +1184,7 @@ func (io IO)SaveStringBuffer(str []byte, len int) () {
 // the similar function `RedisModule_LoadStringBuffer()` could be used instead.
 // RedisModuleString *RM_LoadString(RedisModuleIO *io);
 func (io IO)LoadString() (String) {
-    return CreateString(unsafe.Pointer(C.LoadString(io.ptr())))
+	return CreateString(unsafe.Pointer(C.LoadString(io.ptr())))
 }
 
 // Like `RedisModule_LoadString()` but returns an heap allocated string that
@@ -1196,9 +1196,9 @@ func (io IO)LoadString() (String) {
 // exactly as it was stored inisde the RDB file.
 // char *RM_LoadStringBuffer(RedisModuleIO *io, size_t *lenptr);
 func (io IO)LoadStringBuffer(lenptr *uint64) (unsafe.Pointer) {
-    // func C.GoBytes(unsafe.Pointer, C.int) []byte
-    // TODO return byte slice
-    return unsafe.Pointer(C.LoadStringBuffer(io.ptr(), (*C.size_t)(lenptr)))
+	// func C.GoBytes(unsafe.Pointer, C.int) []byte
+	// TODO return byte slice
+	return unsafe.Pointer(C.LoadStringBuffer(io.ptr(), (*C.size_t)(lenptr)))
 }
 
 // In the context of the rdb_save method of a module data type, saves a double
@@ -1206,14 +1206,14 @@ func (io IO)LoadStringBuffer(lenptr *uint64) (unsafe.Pointer) {
 // It is possible to load back the value with `RedisModule_LoadDouble()`.
 // void RM_SaveDouble(RedisModuleIO *io, double value);
 func (io IO)SaveDouble(value float64) () {
-    C.SaveDouble(io.ptr(), C.double(value))
+	C.SaveDouble(io.ptr(), C.double(value))
 }
 
 // In the context of the rdb_save method of a module data type, loads back the
 // double value saved by `RedisModule_SaveDouble()`.
 // double RM_LoadDouble(RedisModuleIO *io);
 func (io IO)LoadDouble() (float64) {
-    return float64(C.LoadDouble(io.ptr()))
+	return float64(C.LoadDouble(io.ptr()))
 }
 
 // Emits a command into the AOF during the AOF rewriting process. This function
@@ -1223,11 +1223,11 @@ func (io IO)LoadDouble() (float64) {
 // handling is performed by Redis itself.
 // void RM_EmitAOF(RedisModuleIO *io, const char *cmdname, const char *fmt, ...);
 func (io IO)EmitAOF(cmdname string, format string, args...interface{}) () {
-    v := C.CString(fmt.Sprintf(format, args))
-    defer C.free(unsafe.Pointer(v))
-    n := C.CString(cmdname)
-    defer C.free(unsafe.Pointer(n))
-    C.EmitAOF(io.ptr(), n, v)
+	v := C.CString(fmt.Sprintf(format, args))
+	defer C.free(unsafe.Pointer(v))
+	n := C.CString(cmdname)
+	defer C.free(unsafe.Pointer(n))
+	C.EmitAOF(io.ptr(), n, v)
 }
 
 
