@@ -9,12 +9,12 @@ Read in | [中文](./README-zh_CN.md)
 ```bash
 # Ensure you installed the newest redis
 # for example by using brew you can 
-# brew reinstall redis --with-jemalloc --HEAD
+# brew reinstall redis --HEAD
 
 # Build redis module
 go get -u -v -buildmode=c-shared github.com/wenerme/go-rm/modules/hashex
 
-# Start redis-server and load out module with debug log
+# Start redis-server and load our module with debug log
 redis-server --loadmodule ~/go/pkg/*/github.com/wenerme/go-rm/modules/hashex* --loglevel debug
 ```
 
