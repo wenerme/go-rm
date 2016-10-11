@@ -2,14 +2,10 @@ package main
 
 import (
     "github.com/wenerme/go-rm/rm"
-    "fmt"
-    "github.com/urfave/cli"
 )
 
 func main() {
-    fmt.Println("Enter main")
-    app := cli.NewApp()
-    _ = app
+    rm.Run()
 }
 
 func init() {
@@ -17,17 +13,18 @@ func init() {
 }
 func CreateMyMod() *rm.Module {
     mod := rm.NewMod()
-    mod.Name = "HelloWorld"
+    mod.Name = "hashex"
     mod.Version = 1
+    mod.SemVer = "1.0.1-BETA"
+    mod.Author = "wenerme"
+    mod.Email = "wener@wener.me"
+    mod.Website = "http://github.com/wenerme/go-rm"
 
     mod.Commands = []rm.Command{
         {
-            //
-            // HGETSET key field value
-            // Sets the 'field' in Hash 'key' to 'value' and returns the previous value, if
-            // any.
-            // Reply: String, the previous value or NULL if 'field' didn't exist.
-            //
+            Desc: `HGETSET key field value
+Sets the 'field' in Hash 'key' to 'value' and returns the previous value, if any.
+Reply: String, the previous value or NULL if 'field' didn't exist. `,
             Name:   "hsetget",
             Flags:  "write fast deny-oom",
             FirstKey:1, LastKey:1, KeyStep:1,

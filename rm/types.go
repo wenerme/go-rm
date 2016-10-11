@@ -1,22 +1,20 @@
 package rm
 
-import "unsafe"
-
-
-
 // #include <stdlib.h>
 // inline intptr_t PtrToInt(void* ptr){return (intptr_t)ptr;}
 import (
     "fmt"
     "os"
+    "unsafe"
     "github.com/wenerme/letsgo/cutil"
 )
 
 type Ctx uintptr
 type CallReply uintptr
 type String uintptr
-type IO uintptr
 type Key uintptr
+type IO uintptr
+type Digest uintptr
 
 type CmdFunc func(args CmdContext) int
 
@@ -26,10 +24,10 @@ type ListKey Key
 type StringKey Key
 
 func CreateString(ptr unsafe.Pointer) String {
-    return String(cutil.PtrToIntptr(ptr))
+    return String(cutil.PtrToUintptr(ptr))
 }
 func CreateCallReply(ptr unsafe.Pointer) CallReply {
-    return CallReply(cutil.PtrToIntptr(ptr))
+    return CallReply(cutil.PtrToUintptr(ptr))
 }
 func NullString() String {
     return CreateString(NullPointer())
@@ -38,18 +36,16 @@ func NullPointer() unsafe.Pointer {
     return unsafe.Pointer(uintptr(0))
 }
 
-// ModuleType pattern [-_0-9A-Za-z]{9} suggest <typename>-<Vendor> not A{9}
-//type CmdFunc func(ctx Ctx, args CmdArgs) int
-
-
-type ModuleType struct {
+type DataType struct {
+    // Must match [-_0-9A-Za-z]{9} suggest <typename>-<Vendor> not A{9}
     Name       string
-    EncVer     string
-    RdbLoad    func()
-    RdbSave    func()
-    AofRewrite func()
-    Digest     func()
-    Free       func()
+    EncVer     int
+    Desc       string
+    RdbLoad    func(rdb IO, encver int) unsafe.Pointer `json:"-"`
+    RdbSave    func(rdb IO, value unsafe.Pointer) `json:"-"`
+    AofRewrite func(aof IO, key String, value unsafe.Pointer) `json:"-"`
+    Digest     func(digest Digest, value unsafe.Pointer) `json:"-"`
+    Free       func(value unsafe.Pointer) `json:"-"`
 }
 type LogLevel int
 
@@ -60,17 +56,13 @@ const (
     LOG_WARNING
 )
 
-type CmdArgs struct {
-    argv unsafe.Pointer
-    argc int
-}
 type CmdContext struct {
     Ctx  Ctx
     Args [] String
 }
 
 func init() {
-    LogDebug("Init Go Redis module")
+    //LogDebug("Init Go Redis module")
 }
 
 var LogDebug = func(format string, args... interface{}) {

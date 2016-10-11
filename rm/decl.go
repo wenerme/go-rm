@@ -8,6 +8,7 @@ import (
     "fmt"
     "unsafe"
     "bytes"
+    "github.com/wenerme/letsgo/cutil"
 )
 
 //export RedisModule_OnLoad
@@ -33,25 +34,49 @@ func cmd_func_call(id C.int, ctx uintptr, argv uintptr, argc int) C.int {
     c.LogDebug(buf.String())
     return C.int(cmd.Action(CmdContext{Ctx:c, Args:args}))
 }
+
+// typedef int (*RedisModuleCmdFunc) (RedisModuleCtx *ctx, RedisModuleString **argv, int argc);
+// typedef void *(*RedisModuleTypeLoadFunc)(RedisModuleIO *rdb, int encver);
+// typedef void (*RedisModuleTypeSaveFunc)(RedisModuleIO *rdb, void *value);
+// typedef void (*RedisModuleTypeRewriteFunc)(RedisModuleIO *aof, RedisModuleString *key, void *value);
+// typedef void (*RedisModuleTypeDigestFunc)(RedisModuleDigest *digest, void *value);
+// typedef void (*RedisModuleTypeFreeFunc)(void *value);
+
 //export mt_rdb_load_call
 func mt_rdb_load_call(id int, rdb uintptr, encver int) uintptr {
+    dt := getDataType(id)
+    if dt.RdbLoad != nil {
+        return cutil.PtrToUintptr(dt.RdbLoad(IO(rdb), encver))
+    }
     return 0
 }
 //export mt_rdb_save_call
 func mt_rdb_save_call(id int, rdb uintptr, value uintptr) {
-
+    dt := getDataType(id)
+    if dt.RdbSave != nil {
+        dt.RdbSave(IO(rdb), unsafe.Pointer(value))
+    }
 }
 //export mt_aof_rewrite_call
 func mt_aof_rewrite_call(id int, aof uintptr, key uintptr, value uintptr) {
-
+    dt := getDataType(id)
+    if dt.AofRewrite != nil {
+        dt.AofRewrite(IO(aof), String(key), unsafe.Pointer(value))
+    }
 }
 //export mt_digest_call
 func mt_digest_call(id int, digest uintptr, value uintptr) {
-
+    dt := getDataType(id)
+    if dt.Digest != nil {
+        dt.Digest(Digest(digest), unsafe.Pointer(value))
+    }
 }
-//export mt_free
-func mt_free(id int, value uintptr) {
-
+//export mt_free_call
+func mt_free_call(id int, value uintptr) {
+    dt := getDataType(id)
+    if dt.Free != nil {
+        dt.Free(unsafe.Pointer(value))
+    }
 }
 
 func init() {

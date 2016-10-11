@@ -1,12 +1,12 @@
 package rm
 
 var commands = make([]*Command, 0)
-var moduleTypes = make([]*ModuleType, 0)
+var moduleTypes = make([]*DataType, 0)
 
 func getCommand(id int) *Command {
     return commands[id]
 }
-func getModuleType(id int) *ModuleType {
+func getDataType(id int) *DataType {
     return moduleTypes[id]
 }
 func commandId(cmd*Command) int {
@@ -15,7 +15,7 @@ func commandId(cmd*Command) int {
     return id
 }
 
-func moduleTypeId(mt*ModuleType) int {
+func dataTypeId(mt*DataType) int {
     id := len(moduleTypes)
     moduleTypes = append(moduleTypes, mt)
     return id

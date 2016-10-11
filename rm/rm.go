@@ -6,6 +6,7 @@ import (
     "unsafe"
     "fmt"
     "github.com/wenerme/letsgo/cutil"
+    "regexp"
 )
 /* ---------------- Defines common between core and modules --------------- */
 
@@ -596,7 +597,17 @@ func (c Ctx)CreateCommand(cmd *Command) int {
     defer C.free(unsafe.Pointer(name))
     flags := C.CString(cmd.Flags)
     defer C.free(unsafe.Pointer(flags))
-    return (int)(C.CreateCommandCallID(c.ptr(), name, C.int(id), flags, C.int(cmd.FirstKey), C.int(cmd.LastKey), C.int(cmd.KeyStep)))
+    return (int)(C.CreateCommandCallID(c.ptr(), C.int(id), name, flags, C.int(cmd.FirstKey), C.int(cmd.LastKey), C.int(cmd.KeyStep)))
+}
+func (c Ctx)CreateDataType(dt *DataType) uintptr {
+    if m, _ := regexp.MatchString("[-_0-9A-Za-z]{9}", dt.Name); !m {
+        c.LogWarn("Wrong datatype name need `[-_0-9A-Za-z]{9}` got %v", dt.Name)
+        return ERR
+    }
+    id := dataTypeId(dt)
+    name := C.CString(dt.Name)
+    defer C.free(unsafe.Pointer(name))
+    return uintptr(C.CreateDataTypeCallID(c.ptr(), C.int(id), name, C.int(dt.EncVer)))
 }
 
 

@@ -152,6 +152,27 @@ func GenerateCallback(ctx *cli.Context) error {
                 ParamName: "rdb, value",
                 Ret : "void",
             },
+            {
+                Name: "mt_aof_rewrite",
+                Type: "RedisModuleTypeRewriteFunc",
+                ParamString: "RedisModuleIO *aof, RedisModuleString *key, void *value",
+                ParamName: "aof, key, value",
+                Ret : "void",
+            },
+            {
+                Name: "mt_digest",
+                Type: "RedisModuleTypeDigestFunc",
+                ParamString: "RedisModuleDigest *digest, void *value",
+                ParamName: "digest, value",
+                Ret : "void",
+            },
+            {
+                Name: "mt_free",
+                Type: "RedisModuleTypeFreeFunc",
+                ParamString: "void *value",
+                ParamName: "value",
+                Ret : "void",
+            },
         },
     }
     for _, c := range callbackCtx.CallTypes {

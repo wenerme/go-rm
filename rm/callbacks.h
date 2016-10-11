@@ -247,4 +247,36 @@ const RedisModuleTypeSaveFunc cb_mt_rdb_save[] = {
 cb_mt_rdb_save_0,cb_mt_rdb_save_1,cb_mt_rdb_save_2,cb_mt_rdb_save_3,cb_mt_rdb_save_4,
 };
 
+// mt_aof_rewrite - RedisModuleTypeRewriteFunc
+inline int mt_aof_rewrite_size(){return 5;}
+void cb_mt_aof_rewrite_0(RedisModuleIO *aof, RedisModuleString *key, void *value){mt_aof_rewrite_call(0,aof, key, value);}
+void cb_mt_aof_rewrite_1(RedisModuleIO *aof, RedisModuleString *key, void *value){mt_aof_rewrite_call(1,aof, key, value);}
+void cb_mt_aof_rewrite_2(RedisModuleIO *aof, RedisModuleString *key, void *value){mt_aof_rewrite_call(2,aof, key, value);}
+void cb_mt_aof_rewrite_3(RedisModuleIO *aof, RedisModuleString *key, void *value){mt_aof_rewrite_call(3,aof, key, value);}
+void cb_mt_aof_rewrite_4(RedisModuleIO *aof, RedisModuleString *key, void *value){mt_aof_rewrite_call(4,aof, key, value);}
+const RedisModuleTypeRewriteFunc cb_mt_aof_rewrite[] = {
+cb_mt_aof_rewrite_0,cb_mt_aof_rewrite_1,cb_mt_aof_rewrite_2,cb_mt_aof_rewrite_3,cb_mt_aof_rewrite_4,
+};
+
+// mt_digest - RedisModuleTypeDigestFunc
+inline int mt_digest_size(){return 5;}
+void cb_mt_digest_0(RedisModuleDigest *digest, void *value){mt_digest_call(0,digest, value);}
+void cb_mt_digest_1(RedisModuleDigest *digest, void *value){mt_digest_call(1,digest, value);}
+void cb_mt_digest_2(RedisModuleDigest *digest, void *value){mt_digest_call(2,digest, value);}
+void cb_mt_digest_3(RedisModuleDigest *digest, void *value){mt_digest_call(3,digest, value);}
+void cb_mt_digest_4(RedisModuleDigest *digest, void *value){mt_digest_call(4,digest, value);}
+const RedisModuleTypeDigestFunc cb_mt_digest[] = {
+cb_mt_digest_0,cb_mt_digest_1,cb_mt_digest_2,cb_mt_digest_3,cb_mt_digest_4,
+};
+
+// mt_free - RedisModuleTypeFreeFunc
+inline int mt_free_size(){return 5;}
+void cb_mt_free_0(void *value){mt_free_call(0,value);}
+void cb_mt_free_1(void *value){mt_free_call(1,value);}
+void cb_mt_free_2(void *value){mt_free_call(2,value);}
+void cb_mt_free_3(void *value){mt_free_call(3,value);}
+void cb_mt_free_4(void *value){mt_free_call(4,value);}
+const RedisModuleTypeFreeFunc cb_mt_free[] = {
+cb_mt_free_0,cb_mt_free_1,cb_mt_free_2,cb_mt_free_3,cb_mt_free_4,
+};
 #endif
