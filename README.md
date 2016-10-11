@@ -118,3 +118,18 @@ func CreateMyMod() *rm.Module {
     * json.get key \[pretty]
     * json.set key value
         * this will validate the json format
+
+## Pitfall
+* C can not call Go function, so every callback is pre-generated
+    * 200 commands at most
+    * 5 data type at most
+    * limits are easy to change, just need a proper max value
+* Go can not call var_args, function call is pre-generated
+    * HashSet/HashGet can accept 20 args at most
+    * limits are easy to change, just need a proper max value
+
+## TODO
+
+* Handle OnLoad argv, argc
+* Pass OnLoad argv, argc to BeforeInit and AfterInit
+* Find a proper limits for data types and var_args
