@@ -1,14 +1,13 @@
 # Go Redis module
 go-rm will let you write redis module in golang.
 
-Read in | [中文](./README-zh_CN.md)
-----|----
+Leer en | [中文](./README-zh_CN.md) | [Spanish](./README-es.md)
 
 ## Demo
 
 ```bash
 # Ensure you installed the newest redis
-# for example by using brew you can 
+# for example by using brew you can
 # brew reinstall redis --HEAD
 
 # Build redis module
