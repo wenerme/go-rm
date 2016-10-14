@@ -1,7 +1,7 @@
 # Go Redis module
 go-rm will let you write redis module in golang.
 
-Leer en | [中文](./README-zh_CN.md) | [Spanish](./README-es.md)
+Read in | [中文](./README-zh_CN.md) | [Spanish](./README-es.md)
 
 ## Demo
 
