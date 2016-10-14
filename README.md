@@ -126,6 +126,13 @@ func CreateMyMod() *rm.Module {
 * Go can not call var_args, function call is pre-generated
     * HashSet/HashGet can accept 20 args at most
     * limits are easy to change, just need a proper max value
+* Don't know what happens when unload a golang shared module
+    * Single module
+    * Multi module
+        * Is there runtime are shared ?
+* Module write in go can not report it's memory usage to redis, max memory limits is useless
+* If a module write in go also include a third party write in other language, the memory usage is unknown
+* Module can only accept command, seems there is no way to call redis initiative.
 
 ## TODO
 
