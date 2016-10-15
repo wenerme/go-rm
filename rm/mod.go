@@ -12,7 +12,6 @@ type Module struct {
 	Commands   []Command `json:",omitempty"`
 	DataTypes  []DataType `json:",omitempty"`
 
-	// TODO add args
 	BeforeInit func(Ctx, []String) error `json:"-"`
 	AfterInit  func(Ctx, []String) error `json:"-"`
 	// When module unload
@@ -35,6 +34,7 @@ type Module struct {
 }
 
 type Command struct {
+	Usage    string
 	Desc     string
 	Name     string
 	Action   CmdFunc `json:"-"`

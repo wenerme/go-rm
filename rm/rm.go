@@ -579,7 +579,6 @@ func (c Ctx)Load(mod *Module, args []String) int {
 		if c.CreateCommand(cmd) == ERR {
 			return ERR
 		}
-		c.LogVerbose("Create mod %s command %s", mod.Name, cmd.Name)
 	}
 
 	if mod.AfterInit != nil {
@@ -598,7 +597,7 @@ func (c Ctx)CreateCommand(cmd Command) int {
 	defer C.free(unsafe.Pointer(name))
 	flags := C.CString(cmd.Flags)
 	defer C.free(unsafe.Pointer(flags))
-	c.LogDebug("Command %s id %v", cmd.Name, id)
+	c.LogVerbose("CreateCommand#%v %s", id, cmd.Usage)
 	return (int)(C.CreateCommandCallID(c.ptr(), C.int(id), name, flags, C.int(cmd.FirstKey), C.int(cmd.LastKey), C.int(cmd.KeyStep)))
 }
 func (c Ctx)CreateDataType(dt DataType) uintptr {
@@ -702,6 +701,11 @@ func (str String)StringToLongLong(ll *int64) (int) {
 func (str String)StringToDouble(d *float64) (int) {
 	return int(C.StringToDouble(str.ptr(), (*C.double)(d)))
 }
+
+func (str String)Compare(b String) (int) {
+	return int(C.StringCompare(str.ptr(), b.ptr()))
+}
+
 // =============================================================================
 // ========================== Key functions
 // =============================================================================

@@ -196,6 +196,9 @@ var wrapperHeaderTemplate = `
 #define GO_RM_WRAPPER_H
 
 #include "./redismodule.h"
+#include "./hw_wrapper.h"
+
+// Generated wrapper
 
 {{range $i, $v := .Apis}}
 {{if show_api $v -}}

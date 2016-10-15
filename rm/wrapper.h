@@ -3,6 +3,7 @@
 #define GO_RM_WRAPPER_H
 
 #include "./redismodule.h"
+#include "./hw_wrapper.h"
 
 
 // Use like malloc(). Memory allocated with this function is reported in
