@@ -48,22 +48,31 @@ const POSTPONED_ARRAY_LEN = C.REDISMODULE_POSTPONED_ARRAY_LEN
 const NO_EXPIRE = C.REDISMODULE_NO_EXPIRE
 
 /* Sorted set API flags. */
-const ZADD_XX = C.REDISMODULE_ZADD_XX
-const ZADD_NX = C.REDISMODULE_ZADD_NX
-const ZADD_ADDED = C.REDISMODULE_ZADD_ADDED
-const ZADD_UPDATED = C.REDISMODULE_ZADD_UPDATED
-const ZADD_NOP = C.REDISMODULE_ZADD_NOP
+const (
+	ZADD_XX = 1 << iota
+	ZADD_NX
+	ZADD_ADDED
+	ZADD_UPDATED
+	ZADD_NOP
+)
 
 /* Hash API flags. */
-const HASH_NONE = C.REDISMODULE_HASH_NONE
-const HASH_NX = C.REDISMODULE_HASH_NX
-const HASH_XX = C.REDISMODULE_HASH_XX
-const HASH_CFIELDS = C.REDISMODULE_HASH_CFIELDS
-const HASH_EXISTS = C.REDISMODULE_HASH_EXISTS
+const (
+	HASH_NONE = 0
+	// Set if non-exists
+	HASH_NX = 1 << iota
+	// Set if exists
+	HASH_XX
+	// Use *char as args, ! do not use this flag
+	HASH_CFIELDS
+	// Check field exists
+	HASH_EXISTS
+)
 
 /* A special pointer that we can use between the core and the module to signal
  * field deletion, and that is impossible to be a valid pointer. */
-//const HASH_DELETE = C.REDISMODULE_HASH_DELETE
+//#define REDISMODULE_HASH_DELETE ((RedisModuleString*)(long)1)
+
 
 /* Error messages. */
 const ERRORMSG_WRONGTYPE = C.REDISMODULE_ERRORMSG_WRONGTYPE
@@ -1099,6 +1108,11 @@ func (key Key)HashExists(field String) bool {
 	key.HashGet(HASH_EXISTS, field, &exists)
 	return exists == 1
 }
+//`RedisModule_HashSet(key`,`REDISMODULE_HASH_NONE`,argv[1], `REDISMODULE_HASH_DELETE`,NULL);
+func (key Key)HashDel(field String) int {
+	return key.HashSet(HASH_NONE, field, String(1))
+}
+
 // If the key is open for writing, set the specified module type object
 // as the value of the key, deleting the old value if any.
 // On success `REDISMODULE_OK` is returned. If the key is not open for
