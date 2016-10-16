@@ -1,6 +1,14 @@
 # Go Redis module
 go-rm 旨在通过 Golang 来实现 redis 模块.
 
+语言 | [中文](./README-zh_CN.md) | [English](./README.md) | [Spanish](./README-es.md)
+
+## 现有模块
+
+* [redismodule](https://github.com/redismodule)
+    * [rxhash(https://github.com/redismodule/rxhash)
+
+
 ## 演示
 
 ```bash
@@ -9,21 +17,27 @@ go-rm 旨在通过 Golang 来实现 redis 模块.
 # brew reinstall redis --HEAD
 
 # 构建 redis 模块
-go get -u -v -buildmode=c-shared github.com/wenerme/go-rm/modules/hashex
+go build -v -buildmode=c-shared github.com/redismodule/rxhash/cmd/rxhash
 
 # 启动 redis-server 并加载刚刚编译的模块,使用 debug 日志级别
-redis-server --loadmodule ~/go/pkg/*/github.com/wenerme/go-rm/modules/hashex* --loglevel debug
+redis-server --loadmodule rxhash --loglevel debug
 ```
 
 __客户端__
 
 ```
-$ redis-cli hsetget a a 5
-(nil)
-$ redis-cli hsetget a a 4
-"5"
-$ redis-cli hsetget a a 3
-"3"
+# Test hgetset
+redis-cli hset a a 1
+#> (integer) 1
+redis-cli hgetset a a 2
+#> "1"
+redis-cli hget a a
+#> "2"
+# Return nil if field not exists
+redis-cli hgetset a b 2
+#> (nil)
+redis-cli hgetset a b 3
+#> "2"
 ```
 
 ## 如何实现一个 Redis 模块
@@ -36,7 +50,7 @@ package main
 import "github.com/wenerme/go-rm/rm"
 
 func main() {
-    // 避免改代码被运行
+    // In case someone try to run this
     rm.Run()
 }
 
@@ -47,38 +61,49 @@ func CreateMyMod() *rm.Module {
     mod := rm.NewMod()
     mod.Name = "hashex"
     mod.Version = 1
-    mod.Commands = []rm.Command{
-        {
-            Name:   "hsetget",
-            Flags:  "write fast deny-oom",
-            FirstKey:1, LastKey:1, KeyStep:1,
-            Action: func(cmd rm.CmdContext) int {
-                ctx := cmd.Ctx
-                if len(cmd.Args) != 4 {
-                    return ctx.WrongArity()
-                }
-                ctx.AutoMemory()
-                // open the key and make sure it is indeed a Hash and not empty
-                key := ctx.OpenKey(cmd.Args[1], rm.READ | rm.WRITE)
-                if key.KeyType() != rm.KEYTYPE_EMPTY && key.KeyType() != rm.KEYTYPE_HASH {
-                    ctx.ReplyWithError(rm.ERRORMSG_WRONGTYPE)
-                    return rm.ERR
-                }
-                // get the current value of the hash element
-                var val rm.String;
-                key.HashGet(rm.HASH_NONE, cmd.Args[2], (*uintptr)(&val), rm.NullString())
-                // set the element to the new value
-                key.HashSet(rm.HASH_NONE, cmd.Args[2], cmd.Args[3], rm.NullString())
-                if val.IsNull() {
-                    ctx.ReplyWithNull()
-                } else {
-                    ctx.ReplyWithString(val)
-                }
-                return rm.OK
-            },
-        },
-    }
+    mod.Commands = []rm.Command{CreateCommand_HGETSET()}
     return mod
+}
+func CreateCommand_HGETSET() rm.Command {
+	return rm.Command{
+		Usage: "HGETSET key field value",
+		Desc: `Sets the 'field' in Hash 'key' to 'value' and returns the previous value, if any.
+Reply: String, the previous value or NULL if 'field' didn't exist. `,
+		Name:   "hgetset",
+		Flags:  "write fast deny-oom",
+		FirstKey:1, LastKey:1, KeyStep:1,
+		Action: func(cmd rm.CmdContext) int {
+			ctx, args := cmd.Ctx, cmd.Args
+			if len(cmd.Args) != 4 {
+				return ctx.WrongArity()
+			}
+			ctx.AutoMemory()
+			key, ok := openHashKey(ctx, args[1])
+			if !ok {
+				return rm.ERR
+			}
+			// get the current value of the hash element
+			var val rm.String;
+			key.HashGet(rm.HASH_NONE, cmd.Args[2], (*uintptr)(&val))
+			// set the element to the new value
+			key.HashSet(rm.HASH_NONE, cmd.Args[2], cmd.Args[3])
+			if val.IsNull() {
+				ctx.ReplyWithNull()
+			} else {
+				ctx.ReplyWithString(val)
+			}
+			return rm.OK
+		},
+	}
+}
+// open the key and make sure it is indeed a Hash and not empty
+func openHashKey(ctx rm.Ctx, k rm.String) (rm.Key, bool) {
+	key := ctx.OpenKey(k, rm.READ | rm.WRITE)
+	if key.KeyType() != rm.KEYTYPE_EMPTY && key.KeyType() != rm.KEYTYPE_HASH {
+		ctx.ReplyWithError(rm.ERRORMSG_WRONGTYPE)
+		return rm.Key(0), false
+	}
+	return key, true
 }
 ```
 
