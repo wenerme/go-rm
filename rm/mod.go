@@ -31,6 +31,8 @@ type Module struct {
 	Email      string `json:",omitempty"`
 	// Long description for this module
 	Desc       string `json:",omitempty"`
+	// Will log more things
+	Debug      bool
 }
 
 type Command struct {
@@ -38,6 +40,7 @@ type Command struct {
 	Desc     string
 	Name     string
 	Action   CmdFunc `json:"-"`
+	// Use BuildCommandFLags to generate this flags
 	Flags    string
 	FirstKey int
 	LastKey  int

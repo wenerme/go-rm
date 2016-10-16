@@ -37,14 +37,38 @@ func NullPointer() unsafe.Pointer {
 }
 
 type DataType struct {
-	// Must match [-_0-9A-Za-z]{9} suggest <typename>-<Vendor> not A{9}
+	// A 9 characters data type name that MUST be unique in the Redis
+	// Modules ecosystem. Be creative... and there will be no collisions. Use
+	// the charset A-Z a-z 9-0, plus the two "-_" characters. A good
+	// idea is to use, for example `<typename>-<vendor>`. For example
+	// "tree-AntZ" may mean "Tree data structure by @antirez". To use both
+	// lower case and upper case letters helps in order to prevent collisions.
+	//
+	// Note: the module name "AAAAAAAAA" is reserved and produces an error, it
+	// happens to be pretty lame as well.
 	Name       string
+	// Encoding version, which is, the version of the serialization
+	// that a module used in order to persist data. As long as the "name"
+	// matches, the RDB loading will be dispatched to the type callbacks
+	// whatever 'encver' is used, however the module can understand if
+	// the encoding it must load are of an older version of the module.
+	// For example the module "tree-AntZ" initially used encver=0. Later
+	// after an upgrade, it started to serialize data in a different format
+	// and to register the type with encver=1. However this module may
+	// still load old data produced by an older version if the rdb_load
+	// callback is able to check the encver value and act accordingly.
+	// The encver must be a positive value between 0 and 1023.
 	EncVer     int
 	Desc       string
+	// A callback function pointer that loads data from RDB files.
 	RdbLoad    func(rdb IO, encver int) unsafe.Pointer `json:"-"`
+	// A callback function pointer that saves data to RDB files.
 	RdbSave    func(rdb IO, value unsafe.Pointer) `json:"-"`
+	// A callback function pointer that rewrites data as commands.
 	AofRewrite func(aof IO, key String, value unsafe.Pointer) `json:"-"`
+	// A callback function pointer that is used for `DEBUG DIGEST`.
 	Digest     func(digest Digest, value unsafe.Pointer) `json:"-"`
+	// A callback function pointer that can free a type value.
 	Free       func(value unsafe.Pointer) `json:"-"`
 }
 type LogLevel int

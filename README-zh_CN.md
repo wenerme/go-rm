@@ -6,7 +6,7 @@ go-rm 旨在通过 Golang 来实现 redis 模块.
 ## 现有模块
 
 * [redismodule](https://github.com/redismodule)
-    * [rxhash(https://github.com/redismodule/rxhash)
+    * [rxhash](https://github.com/redismodule/rxhash)
 
 
 ## 演示

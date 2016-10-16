@@ -6,7 +6,7 @@ Read in | [中文](./README-zh_CN.md) | [English](./README.md) | [Spanish](./REA
 ## Modules
 
 * [redismodule](https://github.com/redismodule)
-    * [rxhash(https://github.com/redismodule/rxhash)
+    * [rxhash](https://github.com/redismodule/rxhash)
 
 ## Demo
 

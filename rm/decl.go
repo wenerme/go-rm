@@ -27,7 +27,7 @@ func cmd_func_call(id C.int, ctx uintptr, argv uintptr, argc int) C.int {
 	args := toStringSlice(argv, argc)
 	c := Ctx(ctx)
 	cmd := getCommand(int(id))
-	if Debug {
+	if Mod.Debug {
 		buf := bytes.NewBufferString(fmt.Sprintf("CmdFuncCall(%v): %v", id, cmd.Name))
 		for i := 0; i < argc; i ++ {
 			buf.WriteString(" ")

@@ -5,11 +5,11 @@ import (
 	"strings"
 )
 
-type CommandFlag string
+type CmdFlag string
 
 const (
 	// The command may modify the data set (it may also read from it).
-	CF_WRITE CommandFlag = "write"
+	CF_WRITE CmdFlag = "write"
 
 	// The command returns data from keys but never writes.
 	CF_READONLY = "readonly"
@@ -63,7 +63,7 @@ const (
 	CF_NO_CLUSTER = "no-cluster"
 )
 
-func BuildCommandFlag(f ...CommandFlag) string {
+func BuildCommandFlag(f ...CmdFlag) string {
 	buf := bytes.NewBufferString("")
 	for _, v := range f {
 		buf.WriteString(string(v))
