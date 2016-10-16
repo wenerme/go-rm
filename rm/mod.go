@@ -16,21 +16,21 @@ type Module struct {
 	AfterInit  func(Ctx, []String) error `json:"-"`
 	// When module unload
 	// ! Very unstable, try to avoid this
-	OnUnload   func()
+	OnUnload   func() `json:"-"`
 
 	// Compilation date
 	Compiled   time.Time
 	// List of all authors who contributed
 	//Authors []Author
 	// Copyright of the binary if any
-	Copyright  string
+	Copyright  string `json:",omitempty"`
 	// Name of Author (Note: Use App.Authors, this is deprecated)
-	Author     string
-	Website    string
+	Author     string `json:",omitempty"`
+	Website    string `json:",omitempty"`
 	// Email of Author (Note: Use App.Authors, this is deprecated)
-	Email      string
+	Email      string `json:",omitempty"`
 	// Long description for this module
-	Desc       string
+	Desc       string `json:",omitempty"`
 }
 
 type Command struct {
