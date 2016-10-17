@@ -4,9 +4,9 @@ package rm
 // inline intptr_t PtrToInt(void* ptr){return (intptr_t)ptr;}
 import (
 	"fmt"
+	"github.com/wenerme/letsgo/cutil"
 	"os"
 	"unsafe"
-	"github.com/wenerme/letsgo/cutil"
 )
 
 type Ctx uintptr
@@ -15,6 +15,7 @@ type String uintptr
 type Key uintptr
 type IO uintptr
 type Digest uintptr
+type ModuleType uintptr
 
 type CmdFunc func(args CmdContext) int
 
@@ -37,6 +38,7 @@ func NullPointer() unsafe.Pointer {
 }
 
 type DataType struct {
+	Desc string
 	// A 9 characters data type name that MUST be unique in the Redis
 	// Modules ecosystem. Be creative... and there will be no collisions. Use
 	// the charset A-Z a-z 9-0, plus the two "-_" characters. A good
@@ -46,7 +48,7 @@ type DataType struct {
 	//
 	// Note: the module name "AAAAAAAAA" is reserved and produces an error, it
 	// happens to be pretty lame as well.
-	Name       string
+	Name string
 	// Encoding version, which is, the version of the serialization
 	// that a module used in order to persist data. As long as the "name"
 	// matches, the RDB loading will be dispatched to the type callbacks
@@ -58,18 +60,17 @@ type DataType struct {
 	// still load old data produced by an older version if the rdb_load
 	// callback is able to check the encver value and act accordingly.
 	// The encver must be a positive value between 0 and 1023.
-	EncVer     int
-	Desc       string
+	EncVer int
 	// A callback function pointer that loads data from RDB files.
-	RdbLoad    func(rdb IO, encver int) unsafe.Pointer `json:"-"`
+	RdbLoad func(rdb IO, encver int) unsafe.Pointer `json:"-"`
 	// A callback function pointer that saves data to RDB files.
-	RdbSave    func(rdb IO, value unsafe.Pointer) `json:"-"`
+	RdbSave func(rdb IO, value unsafe.Pointer) `json:"-"`
 	// A callback function pointer that rewrites data as commands.
 	AofRewrite func(aof IO, key String, value unsafe.Pointer) `json:"-"`
 	// A callback function pointer that is used for `DEBUG DIGEST`.
-	Digest     func(digest Digest, value unsafe.Pointer) `json:"-"`
+	Digest func(digest Digest, value unsafe.Pointer) `json:"-"`
 	// A callback function pointer that can free a type value.
-	Free       func(value unsafe.Pointer) `json:"-"`
+	Free func(value unsafe.Pointer) `json:"-"`
 }
 type LogLevel int
 
@@ -82,47 +83,53 @@ const (
 
 type CmdContext struct {
 	Ctx  Ctx
-	Args [] String
+	Args []String
 }
 
 func init() {
 	//LogDebug("Init Go Redis module")
 }
 
-var LogDebug = func(format string, args... interface{}) {
-	fmt.Fprintf(os.Stdout, format + "\n", args...)
+var LogDebug = func(format string, args ...interface{}) {
+	fmt.Fprintf(os.Stdout, format+"\n", args...)
 }
-var LogError = func(format string, args... interface{}) {
-	fmt.Fprintf(os.Stderr, format + "\n", args...)
+var LogError = func(format string, args ...interface{}) {
+	fmt.Fprintf(os.Stderr, format+"\n", args...)
 }
 
-func (v String)ptr() unsafe.Pointer {
+func (v String) ptr() unsafe.Pointer {
 	return unsafe.Pointer(v)
 }
-func (v Ctx)ptr() unsafe.Pointer {
+func (v Ctx) ptr() unsafe.Pointer {
 	return unsafe.Pointer(v)
 }
-func (v CallReply)ptr() unsafe.Pointer {
+func (v CallReply) ptr() unsafe.Pointer {
 	return unsafe.Pointer(v)
 }
-func (v IO)ptr() unsafe.Pointer {
+func (v IO) ptr() unsafe.Pointer {
 	return unsafe.Pointer(v)
 }
-func (v Key)ptr() unsafe.Pointer {
+func (v Key) ptr() unsafe.Pointer {
 	return unsafe.Pointer(v)
 }
-func (v String)IsNull() bool {
+func (v ModuleType) ptr() unsafe.Pointer {
+	return unsafe.Pointer(v)
+}
+func (v String) IsNull() bool {
 	return uintptr(v) == 0
 }
-func (v Ctx)IsNull() bool {
+func (v Ctx) IsNull() bool {
 	return uintptr(v) == 0
 }
-func (v CallReply)IsNull() bool {
+func (v CallReply) IsNull() bool {
 	return uintptr(v) == 0
 }
-func (v IO)IsNull() bool {
+func (v IO) IsNull() bool {
 	return uintptr(v) == 0
 }
-func (v Key)IsNull() bool {
+func (v Key) IsNull() bool {
+	return uintptr(v) == 0
+}
+func (v ModuleType) IsNull() bool {
 	return uintptr(v) == 0
 }

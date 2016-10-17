@@ -6,6 +6,8 @@
 #include "./callbacks.h"
 #include "./wrapper.h"
 
+int ReplyWithOK(RedisModuleCtx* ctx){return RedisModule_ReplyWithSimpleString(ctx,"OK");}
+int ModuleTypeSetValuePtr(RedisModuleKey* key,RedisModuleType* mt,uintptr_t value){return RedisModule_ModuleTypeSetValue(key,mt,(void*)(value));}
 
 int CreateCommandCallID(RedisModuleCtx *ctx,int id, const char *name,  const char *strflags, int firstkey, int lastkey, int keystep) {
   return RedisModule_CreateCommand(ctx, name, cb_cmd_func[id], strflags, firstkey, lastkey, keystep);

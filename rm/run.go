@@ -1,11 +1,11 @@
 package rm
 
 import (
-	"github.com/urfave/cli"
-	"text/template"
-	"os"
 	"encoding/json"
+	"github.com/urfave/cli"
+	"os"
 	"strings"
+	"text/template"
 )
 
 // Handler main invoke
@@ -47,8 +47,8 @@ Then you can load this redismodule by
 	}
 	app.Commands = []cli.Command{
 		{
-			Name:"info",
-			Action:func(ctx *cli.Context) error {
+			Name: "info",
+			Action: func(ctx *cli.Context) error {
 				b, err := json.MarshalIndent(Mod, "  ", "  ")
 				if err != nil {
 					return err
@@ -59,7 +59,7 @@ Then you can load this redismodule by
 			},
 		},
 	}
-	if (false) {
+	if false {
 		// Test info output
 		app.Run(strings.Split("redismodule info", " "))
 	}

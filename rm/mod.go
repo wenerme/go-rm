@@ -1,45 +1,50 @@
 package rm
 
 import (
-	"time"
 	"strconv"
+	"time"
 )
 
 type Module struct {
-	Name       string
-	Version    int
-	SemVer     string
-	Commands   []Command `json:",omitempty"`
-	DataTypes  []DataType `json:",omitempty"`
+	Name      string
+	Version   int
+	SemVer    string
+	Commands  []Command  `json:",omitempty"`
+	DataTypes []DataType `json:",omitempty"`
 
 	BeforeInit func(Ctx, []String) error `json:"-"`
 	AfterInit  func(Ctx, []String) error `json:"-"`
 	// When module unload
 	// ! Very unstable, try to avoid this
-	OnUnload   func() `json:"-"`
+	OnUnload func() `json:"-"`
 
 	// Compilation date
-	Compiled   time.Time
+	Compiled time.Time
 	// List of all authors who contributed
 	//Authors []Author
 	// Copyright of the binary if any
-	Copyright  string `json:",omitempty"`
+	Copyright string `json:",omitempty"`
 	// Name of Author (Note: Use App.Authors, this is deprecated)
-	Author     string `json:",omitempty"`
-	Website    string `json:",omitempty"`
+	Author  string `json:",omitempty"`
+	Website string `json:",omitempty"`
 	// Email of Author (Note: Use App.Authors, this is deprecated)
-	Email      string `json:",omitempty"`
+	Email string `json:",omitempty"`
 	// Long description for this module
-	Desc       string `json:",omitempty"`
+	Desc string `json:",omitempty"`
 	// Will log more things
-	Debug      bool
+	Debug bool
+}
+
+func IsDebugEnabled() bool {
+	// TODO Check redis log level
+	return false
 }
 
 type Command struct {
-	Usage    string
-	Desc     string
-	Name     string
-	Action   CmdFunc `json:"-"`
+	Usage  string
+	Desc   string
+	Name   string
+	Action CmdFunc `json:"-"`
 	// Use BuildCommandFLags to generate this flags
 	Flags    string
 	FirstKey int
