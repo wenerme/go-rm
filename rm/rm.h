@@ -2,6 +2,7 @@
 #define GO_RM_RM_H
 
 #include <stdlib.h>
+#include <stdint.h>
 #include "./redismodule.h"
 #include "./callbacks.h"
 #include "./wrapper.h"
