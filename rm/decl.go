@@ -2,6 +2,7 @@ package rm
 
 /*
 #include <stdlib.h>
+#include <stdint.h>
 */
 import "C"
 import (
