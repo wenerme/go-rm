@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// Redis module definition
 type Module struct {
 	Name      string
 	Version   int
@@ -35,9 +36,10 @@ type Module struct {
 	Debug bool
 }
 
+// Is debug enabled
 func IsDebugEnabled() bool {
 	// TODO Check redis log level
-	return false
+	return true
 }
 
 type Command struct {

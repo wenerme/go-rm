@@ -6,11 +6,15 @@ import (
 	"fmt"
 	"github.com/wenerme/letsgo/cutil"
 	"os"
+	"syscall"
 	"unsafe"
 )
 
 type Ctx uintptr
-type CallReply uintptr
+type CallReply struct {
+	uintptr
+	errono syscall.Errno
+}
 type String uintptr
 type Key uintptr
 type IO uintptr
@@ -28,7 +32,10 @@ func CreateString(ptr unsafe.Pointer) String {
 	return String(cutil.PtrToUintptr(ptr))
 }
 func CreateCallReply(ptr unsafe.Pointer) CallReply {
-	return CallReply(cutil.PtrToUintptr(ptr))
+	return CallReply{cutil.PtrToUintptr(ptr), getErrno()}
+}
+func CreateCallReplyError(errno syscall.Errno) CallReply {
+	return CallReply{0, errno}
 }
 func NullString() String {
 	return CreateString(NullPointer())
@@ -104,7 +111,7 @@ func (v Ctx) ptr() unsafe.Pointer {
 	return unsafe.Pointer(v)
 }
 func (v CallReply) ptr() unsafe.Pointer {
-	return unsafe.Pointer(v)
+	return unsafe.Pointer(v.uintptr)
 }
 func (v IO) ptr() unsafe.Pointer {
 	return unsafe.Pointer(v)
@@ -122,7 +129,10 @@ func (v Ctx) IsNull() bool {
 	return uintptr(v) == 0
 }
 func (v CallReply) IsNull() bool {
-	return uintptr(v) == 0
+	return uintptr(v.uintptr) == 0
+}
+func (v CallReply) IsErrno() (bool, syscall.Errno) {
+	return v.errono != 0, v.errono
 }
 func (v IO) IsNull() bool {
 	return uintptr(v) == 0

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/wenerme/letsgo/cutil"
 	"regexp"
+	"syscall"
 	"unsafe"
 )
 
@@ -81,6 +82,10 @@ const ERRORMSG_WRONGTYPE = "WRONGTYPE Operation against a key holding the wrong 
 
 //const POSITIVE_INFINITE = C.REDISMODULE_POSITIVE_INFINITE
 //const NEGATIVE_INFINITE = C.REDISMODULE_NEGATIVE_INFINITE
+
+func getErrno() syscall.Errno {
+	return syscall.Errno(C.get_errno())
+}
 
 /* ------------------------- End of common defines ------------------------ */
 
@@ -523,10 +528,23 @@ func (ctx Ctx) OpenKey(keyname String, mode int) Key {
 func (ctx Ctx) Call(cmdname string, format string, args ...interface{}) CallReply {
 	c := C.CString(cmdname)
 	defer C.free(unsafe.Pointer(c))
-	msg := fmt.Sprintf(format, args...)
-	s := C.CString(msg)
-	defer C.free(unsafe.Pointer(s))
-	return CreateCallReply(unsafe.Pointer(C.Call((*C.struct_RedisModuleCtx)(ctx.ptr()), c, s)))
+
+	f := C.CString(format)
+	defer C.free(unsafe.Pointer(f))
+
+	args = append(args, uintptr(0))
+	p, err := cutil.VarArgsPtr(args...)
+	defer C.free(p)
+	if err != nil {
+		LogError("Call failed: %v", err)
+		return CreateCallReplyError(syscall.EINVAL)
+	}
+	return CreateCallReply(unsafe.Pointer(C.CallVar(
+		(*C.struct_RedisModuleCtx)(ctx.ptr()),
+		c,
+		f,
+		C.int(len(args)),
+		(*C.intptr_t)(p))))
 }
 
 // Produces a log message to the standard Redis log, the format accepts
@@ -638,9 +656,7 @@ func (ctx Ctx) ReplyWithOK() int {
 	return int(C.ReplyWithOK((*C.struct_RedisModuleCtx)(ctx.ptr())))
 }
 
-// =============================================================================
-// ========================== Reply functions
-// =============================================================================
+// region CallReply
 
 // Wrapper for the recursive free reply function. This is needed in order
 // to have the first level function to return on nested replies, but only
@@ -694,6 +710,8 @@ func (reply CallReply) CreateStringFromCallReply() String {
 func (reply CallReply) CallReplyProto(len *uint64) unsafe.Pointer {
 	return unsafe.Pointer(C.CallReplyProto((*C.struct_RedisModuleCallReply)(reply.ptr()), (*C.size_t)(len)))
 }
+
+// endregion
 
 // =============================================================================
 // ========================== String functions

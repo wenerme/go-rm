@@ -5,6 +5,7 @@ import (
 	"strings"
 )
 
+// Flags for create command
 type CmdFlag string
 
 const (
